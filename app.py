@@ -70,6 +70,7 @@ def GetTrophyImage(_url):
 
 
 def SaveImagesFromURL(_imageURL):
+    URL = _imageURL
     filename = URL.split('/')[-1]
     urllib.request.urlretrieve(
         URL, "./images/originals/"+filename)

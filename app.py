@@ -16,6 +16,10 @@ urlImagesHD = []
 
 
 def GetTrophies(_url):
+    """
+    Scrapes all trophies SD images given a URL.\n
+    This is a fast scrape, but not ideal
+    """
 
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:76.0) Gecko/20100101 Firefox/76.0"}
@@ -35,6 +39,10 @@ def GetTrophies(_url):
 
 
 def GetTrophiesHD(_gameID):
+    """
+    Scrapes all trophies URLs given a game ID.\n
+    Scrapes links to the single trophy pages
+    """
 
     URL = "https://psnprofiles.com/trophies/"+str(_gameID)
     headers = {
@@ -52,6 +60,9 @@ def GetTrophiesHD(_gameID):
 
 
 def GetTrophyImage(_url):
+    """
+    Scrapes URL of HD trophies images
+    """
 
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:76.0) Gecko/20100101 Firefox/76.0"}
@@ -77,6 +88,11 @@ def SaveImagesFromURL(_imageURL):
 
 
 def ConsumeImages():
+    """
+    Chews images from the /consume folder.
+    Only chews accepted filetypes defined in config file
+    """
+
     for r, d, f in os.walk('./images/consume/'):
         for file in f:
             filename, file_extension = os.path.splitext(file)
@@ -88,6 +104,8 @@ def ConsumeImages():
 
 
 def ProcessImage(_imageURL='', _local=False):
+    """Add frame to images"""
+
     imgFrame = Image.open('./images/frame.png')
     imgFrame_size = imgFrame.size
     URL = _imageURL
@@ -110,14 +128,12 @@ def ProcessImage(_imageURL='', _local=False):
     imgFinal.paste(imgFrame)
     imgFinal.paste(imgTrophy_s, (15, 15))
 
-    # imgFinal.show()
-    print(os.getcwd())
     final = imgFinal.save(
         './images/processed/'+filename, 'PNG')
 
 
-ConsumeImages()
-
-# GetTrophiesHD(10904)
-# for urlImage in urlImagesHD:
-#    ProcessImage(urlImage)
+gameID = int(input("Insert Game ID: "))
+if (gameID != 0):
+    GetTrophiesHD(gameID)
+else:
+    ConsumeImages()

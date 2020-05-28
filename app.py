@@ -2,42 +2,87 @@ from PIL import Image
 from PIL import ImageDraw
 from bs4 import BeautifulSoup
 from io import BytesIO
+import time
 import requests
 import sys
 
 # Trophies scraping
-headers = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:76.0) Gecko/20100101 Firefox/76.0"}
-
-URL = "https://psnprofiles.com/trophies/10903-atomicrops"
-page = requests.get(URL, headers=headers)
-soup = BeautifulSoup(page.content, 'html.parser')
-images = soup.find_all("picture", class_="trophy")
 
 urlImages = []
 
-for image in images:
-    info = str(image)
-    urlStart = info.find('<img src="')+10
-    url_1 = info[urlStart:]
+
+def GetTrophies(_url):
+
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:76.0) Gecko/20100101 Firefox/76.0"}
+
+    URL = _url
+    page = requests.get(URL, headers=headers)
+    soup = BeautifulSoup(page.content, 'html.parser')
+    images = soup.find_all("picture", class_="trophy")
+
+    for image in images:
+        info = str(image)
+        urlStart = info.find('<img src="')+10
+        url_1 = info[urlStart:]
+        urlEnd = url_1.find('"')
+        urlImage = url_1[:urlEnd]
+        urlImages.append(urlImage)
+
+
+def GetTrophiesHD(_gameID):
+
+    URL = "https://psnprofiles.com/trophies/"+str(_gameID)
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:76.0) Gecko/20100101 Firefox/76.0"}
+    page = requests.get(URL, headers=headers)
+    soup = BeautifulSoup(page.content, 'html.parser')
+    blocks = soup.find_all('td', style="width: 100%;")
+    #soup_2 = BeautifulSoup(images.content, 'html.parser')
+    #links = soup_2.find_all("a")
+    for block in blocks:
+        fullSnippet = str(block)
+        urlStart = fullSnippet.find('href="')+6
+        url_1 = fullSnippet[urlStart:]
+        urlEnd = url_1.find('"')
+        urlTrophy = "https://psnprofiles.com"+url_1[:urlEnd]
+        GetTrophyImage(urlTrophy)
+
+        # urlImages.append(urlImage)
+
+
+urlImagesHD = []
+
+
+def GetTrophyImage(_url):
+
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:76.0) Gecko/20100101 Firefox/76.0"}
+    URL = _url
+
+    page = requests.get(URL, headers=headers)
+    soup = BeautifulSoup(page.content, 'html.parser')
+    blocks = soup.find_all('td')
+    block = str(blocks[0])
+
+    urlStart = block.find('href="')+6
+    url_1 = block[urlStart:]
     urlEnd = url_1.find('"')
-    #urlEnd = info.find('"></img></picture>')
-    urlImage = url_1[:urlEnd]
+    urlTrophyImage = url_1[:urlEnd]
+    urlImagesHD.append(urlTrophyImage)
 
-    print(urlImage)
-    urlImages.append(urlImage)
-
-for urlImage in urlImages:
-    response = requests.get(urlImage)
 
 # Image processing
 
 
-def ProcessImage(_image):
+def ProcessImage(_imageURL):
     imgFrame = Image.open('./images/frame.png')
     imgFrame_size = imgFrame.size
-
-    imgTrophy = Image.open('./images/trophy.png')
+    URL = _imageURL
+    print(URL)
+    response = requests.get(URL, headers={'Cache-Control': 'no-cache'})
+    imgTrophy = Image.open(BytesIO(response.content))
+    #imgTrophy = Image.open('./images/trophy.png')
     imgTrophy_size = imgTrophy.size
 
     imgTrophy_s = imgTrophy.resize((210, 210))
@@ -46,5 +91,11 @@ def ProcessImage(_image):
     imgFinal.paste(imgFrame)
     imgFinal.paste(imgTrophy_s, (15, 15))
 
-    # imgFinal.show()
+    imgFinal.show()
     #final = imgFinal.save('.images/')
+
+
+GetTrophiesHD(10903)
+for urlImage in urlImagesHD:
+    ProcessImage(urlImage)
+    time.sleep(2)

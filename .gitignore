@@ -1,3 +1,5 @@
 *.py.*
 *~
 *.log
+images/originals/*
+images/processed/*

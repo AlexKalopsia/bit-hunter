@@ -3,12 +3,16 @@ from PIL import ImageDraw
 from bs4 import BeautifulSoup
 from io import BytesIO
 import time
+import urllib.request
 import requests
 import sys
+import os
+import config
 
 # Trophies scraping
 
 urlImages = []
+urlImagesHD = []
 
 
 def GetTrophies(_url):
@@ -38,8 +42,6 @@ def GetTrophiesHD(_gameID):
     page = requests.get(URL, headers=headers)
     soup = BeautifulSoup(page.content, 'html.parser')
     blocks = soup.find_all('td', style="width: 100%;")
-    #soup_2 = BeautifulSoup(images.content, 'html.parser')
-    #links = soup_2.find_all("a")
     for block in blocks:
         fullSnippet = str(block)
         urlStart = fullSnippet.find('href="')+6
@@ -47,11 +49,6 @@ def GetTrophiesHD(_gameID):
         urlEnd = url_1.find('"')
         urlTrophy = "https://psnprofiles.com"+url_1[:urlEnd]
         GetTrophyImage(urlTrophy)
-
-        # urlImages.append(urlImage)
-
-
-urlImagesHD = []
 
 
 def GetTrophyImage(_url):
@@ -72,17 +69,19 @@ def GetTrophyImage(_url):
     urlImagesHD.append(urlTrophyImage)
 
 
-# Image processing
-
-
 def ProcessImage(_imageURL):
     imgFrame = Image.open('./images/frame.png')
     imgFrame_size = imgFrame.size
     URL = _imageURL
-    print(URL)
+    filename = URL.split('/')[-1]
     response = requests.get(URL, headers={'Cache-Control': 'no-cache'})
     imgTrophy = Image.open(BytesIO(response.content))
-    #imgTrophy = Image.open('./images/trophy.png')
+
+    if (config.storeOriginals):
+
+        urllib.request.urlretrieve(
+            URL, "./images/originals/"+filename)
+
     imgTrophy_size = imgTrophy.size
 
     imgTrophy_s = imgTrophy.resize((210, 210))
@@ -91,11 +90,12 @@ def ProcessImage(_imageURL):
     imgFinal.paste(imgFrame)
     imgFinal.paste(imgTrophy_s, (15, 15))
 
-    imgFinal.show()
-    #final = imgFinal.save('.images/')
+    # imgFinal.show()
+    print(os.getcwd())
+    final = imgFinal.save(
+        './images/processed/'+filename, 'PNG')
 
 
-GetTrophiesHD(10903)
+GetTrophiesHD(10904)
 for urlImage in urlImagesHD:
     ProcessImage(urlImage)
-    time.sleep(2)

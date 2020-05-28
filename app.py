@@ -121,12 +121,15 @@ def ProcessImage(_imageURL='', _local=False):
             SaveImagesFromURL(URL)
 
     imgTrophy = Image.open(img)
-    imgTrophy_size = imgTrophy.size
-    imgTrophy_s = imgTrophy.resize((210, 210))
+    imgTrophy_width = imgTrophy.width
+    imgTrophy_height = imgTrophy.height
+    imgTrophyInFrame_size = (
+        imgTrophy_width-(config.frameWidth*2), imgTrophy_width-(config.frameWidth*2))
+    imgTrophy_s = imgTrophy.resize(imgTrophyInFrame_size)
 
     imgFinal = Image.new('RGB', imgFrame_size, color='#fff')
     imgFinal.paste(imgFrame)
-    imgFinal.paste(imgTrophy_s, (15, 15))
+    imgFinal.paste(imgTrophy_s, (config.frameWidth, config.frameWidth))
 
     final = imgFinal.save(
         './images/processed/'+filename, 'PNG')

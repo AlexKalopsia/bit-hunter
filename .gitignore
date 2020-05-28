@@ -1,5 +1,8 @@
 *.py.*
 *~
 *.log
-images/originals/*.png
-images/processed/*.png
+__pycache__/*.*
+images/originals/*.*
+images/processed/*.*
+images/consume/*.*
+!.keep

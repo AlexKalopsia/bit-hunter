@@ -69,21 +69,40 @@ def GetTrophyImage(_url):
     urlImagesHD.append(urlTrophyImage)
 
 
-def ProcessImage(_imageURL):
+def SaveImagesFromURL(_imageURL):
+    filename = URL.split('/')[-1]
+    urllib.request.urlretrieve(
+        URL, "./images/originals/"+filename)
+
+
+def ConsumeImages():
+    for r, d, f in os.walk('./images/consume/'):
+        for file in f:
+            filename, file_extension = os.path.splitext(file)
+            canChew = any(s in file_extension.upper()
+                          for s in config.fileTypes)
+            if canChew:
+                path = os.path.join(r, file)
+                ProcessImage(path, True)
+
+
+def ProcessImage(_imageURL='', _local=False):
     imgFrame = Image.open('./images/frame.png')
     imgFrame_size = imgFrame.size
     URL = _imageURL
     filename = URL.split('/')[-1]
-    response = requests.get(URL, headers={'Cache-Control': 'no-cache'})
-    imgTrophy = Image.open(BytesIO(response.content))
 
-    if (config.storeOriginals):
+    if (_local):
+        img = URL
+    else:
+        response = requests.get(URL, headers={'Cache-Control': 'no-cache'})
+        img = BytesIO(response.content)
 
-        urllib.request.urlretrieve(
-            URL, "./images/originals/"+filename)
+        if (config.storeOriginals):
+            SaveImagesFromURL(URL)
 
+    imgTrophy = Image.open(img)
     imgTrophy_size = imgTrophy.size
-
     imgTrophy_s = imgTrophy.resize((210, 210))
 
     imgFinal = Image.new('RGB', imgFrame_size, color='#fff')
@@ -96,6 +115,8 @@ def ProcessImage(_imageURL):
         './images/processed/'+filename, 'PNG')
 
 
-GetTrophiesHD(10904)
-for urlImage in urlImagesHD:
-    ProcessImage(urlImage)
+ConsumeImages()
+
+# GetTrophiesHD(10904)
+# for urlImage in urlImagesHD:
+#    ProcessImage(urlImage)

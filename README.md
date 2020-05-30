@@ -7,7 +7,7 @@ The tool can be configured to export to multiple sizes and multiple formats.
 
 When you run BitHunter, you have two options, adding frames to local images (typing `0`), or pulling the images from PSNProfiles.
 
-If you want to apply a custom frame to the images, create one called `frame.png` and place it inside the `/images` folder.
+If you want to apply a custom frame to the images, create one called `frame.png` and place it inside the root folder.
 
 ### Pulling from PSNProfiles
 
@@ -15,11 +15,11 @@ BitHunter will ask you to type a GameID. This can be found in the PSNProfiles ga
 
 `https://psnprofiles.com/trophies/GameID-game-name`
 
-After pressing Enter, BitHunter will start pulling all the images and resizing them. If you have set `storeOriginals` to `true`, the original non-framed images will be stored in `/images/originals`. The framed images will be stored in `/images/processed/`
+After pressing Enter, BitHunter will start pulling all the images and resizing them. If you have set `storeOriginals` to `true`, the original non-framed images will be stored in `/originals`. The framed images will be stored in `/processed/`
 
 ### Processing local images
 
-If you already have some trophy images stored locally, and you want to just apply the frame to them, place all of them in the `/images/consume` folder. Then start BitImager and press `0`
+If you already have some trophy images stored locally, and you want to just apply the frame to them, place all of them in the `/consume` folder. Then start BitImager and press `0`
 
 ## Config file
 
@@ -55,4 +55,4 @@ _Example 2:_
     "exportTypes": [".PNG"]
 ```
 
-BitHunter will load the trophy images and store them in the `/images/originals/` folder. Then it will apply a 20px thick frame, and export 64x64 images both in .png format
+BitHunter will load the trophy images and store them in the `/originals` folder. Then it will apply a 20px thick frame, and export 64x64 images both in .png format

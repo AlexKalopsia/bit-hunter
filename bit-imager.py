@@ -7,16 +7,40 @@ import urllib.request
 import requests
 import sys
 import os
-import config
 import json
 
-# Trophies scraping
+
+def LoadConfig():
+    """Loads config file or creates a new one
+    if none can be found"""
+
+    try:
+        with open('config.json') as json_data_file:
+            data = json.load(json_data_file)
+    except FileNotFoundError:
+        print("Could not find config.json. Generating one with default values.")
+        data = {
+            'storeOriginals': False,
+            'acceptedTypes': ['.PNG', '.JPG', '.JPEG'],
+            'frameWidth': 15,
+            'exportSizes': [240],
+            'exportTypes': ['.PNG']
+        }
+        with open('config.json', 'w') as outfile:
+            json.dump(data, outfile, indent=4)
+    return data
+
+
+config = LoadConfig()
+storeOriginals = config.get('storeOriginals')
+acceptedTypes = config.get('acceptedTypes')
+frameWidth = config.get('frameWidth')
+exportSizes = config.get('exportSizes')
+exportTypes = config.get('exportTypes')
+
 
 urlImages = []
 urlImagesHD = []
-
-with open('config.json') as json_data_file:
-    config = json.load(json_data_file)
 
 
 def GetTrophies(_url):
@@ -101,7 +125,7 @@ def ConsumeImages():
         for file in f:
             filename, file_extension = os.path.splitext(file)
             canChew = any(s in file_extension.upper()
-                          for s in config['acceptedTypes'])
+                          for s in acceptedTypes)
             if canChew:
                 path = os.path.join(r, file)
                 ProcessImage(path, True)
@@ -121,32 +145,36 @@ def ProcessImage(_imageURL='', _local=False):
         response = requests.get(URL, headers={'Cache-Control': 'no-cache'})
         img = BytesIO(response.content)
 
-        if (config['storeOriginals']):
+        if (storeOriginals):
             SaveImagesFromURL(URL)
 
     imgTrophy = Image.open(img)
     imgTrophy_width = imgTrophy.width
     imgTrophy_height = imgTrophy.height
     imgTrophyInFrame_size = (
-        imgTrophy_width-(config['frameWidth']*2), imgTrophy_width-(config['frameWidth']*2))
+        imgTrophy_width-(frameWidth*2), imgTrophy_width-(frameWidth*2))
     imgTrophy_s = imgTrophy.resize(imgTrophyInFrame_size)
 
     imgFinal = Image.new('RGB', imgFrame_size, color='#fff')
     imgFinal.paste(imgFrame)
-    imgFinal.paste(imgTrophy_s, (config['frameWidth'], config['frameWidth']))
+    imgFinal.paste(imgTrophy_s, (frameWidth, frameWidth))
 
-    sizes = config['exportSizes']
-    types = config['exportTypes']
-    for i, size in enumerate(sizes):
+    for i, size in enumerate(exportSizes):
         imgResized = imgFinal.resize((size, size))
         name, extension = os.path.splitext(filename)
-        for exportType in types:
+        for exportType in exportTypes:
             filename = name+"_"+str(size)+exportType.lower()
             final = imgResized.save(
                 './images/processed/'+filename, exportType[1:])
 
 
-gameID = int(input("Insert Game ID: "))
+intro = """"
+-----------------------
+BitImager - Kalopsia © 2020
+-----------------------
+
+Insert Game ID: """
+gameID = int(input(intro))
 if (gameID != 0):
     GetTrophiesHD(gameID)
 else:

@@ -19,11 +19,11 @@ import time
 folders = ('/consume', '/originals', '/processed')
 mkdir = False
 for i, path in enumerate(folders):
-    if (os.path.exists('./images'+path)):
+    if (os.path.exists('.'+path)):
         pass
     else:
         mkdir = True
-        os.makedirs('./images'+path)
+        os.makedirs('.'+path)
         print("Generating images"+path+" folder...")
     if (i == len(folders)-1) and mkdir:
         print("-------------------------------")
@@ -154,7 +154,7 @@ def SaveImagesFromURL(_imageURL):
     URL = _imageURL
     filename = URL.split('/')[-1]
     urllib.request.urlretrieve(
-        URL, "./images/originals/"+filename)
+        URL, "./originals/"+filename)
 
 
 def ConsumeImages():
@@ -163,7 +163,7 @@ def ConsumeImages():
     Only chews accepted filetypes defined in config file
     """
 
-    for r, d, f in os.walk('./images/consume/'):
+    for r, d, f in os.walk('./consume/'):
         for file in f:
             filename, file_extension = os.path.splitext(file)
             canChew = any(s in file_extension.upper()
@@ -178,7 +178,7 @@ def ProcessImage(_imageURL='', _local=False):
 
     print("\nProcessing "+_imageURL+"...")
     try:
-        imgFrame = Image.open('./images/frame.png')
+        imgFrame = Image.open('./frame.png')
     except IOError:
         print("Could not find frame image. Using default one.")
         imgFrame = Image.new('RGB', (240, 240), color='#fff')
@@ -214,7 +214,7 @@ def ProcessImage(_imageURL='', _local=False):
             filename = name+"_"+str(size)+exportType.lower()
             try:
                 final = imgResized.save(
-                    './images/processed/'+filename, exportType[1:])
+                    './processed/'+filename, exportType[1:])
             except KeyError:
                 if exportType == ".JPG":
                     if ".JPEG" in exportTypes:
@@ -223,7 +223,7 @@ def ProcessImage(_imageURL='', _local=False):
                         print("Cannot export "+filename +
                               "to JPG. Exporting to JPEG.")
                         final = imgResized.save(
-                            './images/processed/'+filename, 'JPEG')
+                            './processed/'+filename, 'JPEG')
                 else:
                     print("File format "+exportType+" not supported.")
 

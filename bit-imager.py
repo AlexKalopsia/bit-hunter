@@ -1,13 +1,17 @@
+#!/usr/bin/env python
+# Copyright 2020 by Alex Camilleri.
+# All rights reserved.
+
+from io import BytesIO
+import json
+import os
+import sys
+
 from PIL import Image
 from PIL import ImageDraw
 from bs4 import BeautifulSoup
-from io import BytesIO
-import time
-import urllib.request
 import requests
-import sys
-import os
-import json
+import urllib.request
 
 
 def LoadConfig():
@@ -167,9 +171,21 @@ def ProcessImage(_imageURL='', _local=False):
         imgResized = imgFinal.resize((size, size))
         name, extension = os.path.splitext(filename)
         for exportType in exportTypes:
+
             filename = name+"_"+str(size)+exportType.lower()
-            final = imgResized.save(
-                './images/processed/'+filename, exportType[1:])
+            try:
+                final = imgResized.save(
+                    './images/processed/'+filename, exportType[1:])
+            except KeyError:
+                if exportType == ".JPG":
+                    if ".JPEG" in exportTypes:
+                        print("Cannot export to JPG.")
+                    else:
+                        print("Cannot export to JPG. Exporting to JPEG.")
+                        final = imgResized.save(
+                            './images/processed/'+filename, 'JPEG')
+                else:
+                    print("File format "+exportType+" not supported.")
 
 
 intro = """

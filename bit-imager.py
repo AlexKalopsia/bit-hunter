@@ -168,12 +168,14 @@ def ProcessImage(_imageURL='', _local=False):
                 './images/processed/'+filename, exportType[1:])
 
 
-intro = """"
+intro = """
 -----------------------
 BitImager - Kalopsia © 2020
 -----------------------
 
-Insert Game ID: """
+Input Game ID or type 0 to consume local images.
+
+Game ID: """
 gameID = int(input(intro))
 if (gameID != 0):
     GetTrophiesHD(gameID)

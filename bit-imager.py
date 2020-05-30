@@ -10,8 +10,22 @@ import sys
 from PIL import Image
 from PIL import ImageDraw
 from bs4 import BeautifulSoup
+from pathlib import Path
 import requests
 import urllib.request
+
+
+folders = ('/consume', '/originals', '/processed')
+mkdir = False
+for i, path in enumerate(folders):
+    if (os.path.exists('./images'+path)):
+        pass
+    else:
+        mkdir = True
+        os.makedirs('./images'+path)
+        print("Generating images"+path+" folder...")
+    if (i == len(folders)-1) and mkdir:
+        print("-------------------------------")
 
 
 def LoadConfig():
@@ -22,7 +36,7 @@ def LoadConfig():
         with open('config.json') as json_data_file:
             data = json.load(json_data_file)
     except FileNotFoundError:
-        print("Could not find config.json. Generating one with default values.")
+        print("Could not find config.json. Generating one with default values...")
         data = {
             'storeOriginals': False,
             'acceptedTypes': ['.PNG', '.JPG', '.JPEG'],
@@ -89,11 +103,14 @@ def GetTrophiesHD(_gameID):
         urlEnd = url_1.find('"')
         urlTrophy = "https://psnprofiles.com"+url_1[:urlEnd]
         GetTrophyImage(urlTrophy)
+    for urlTrophyImage in urlImagesHD:
+        ProcessImage(urlTrophyImage)
+    print("Processing complete\n\n")
 
 
 def GetTrophyImage(_url):
     """
-    Scrapes URL of HD trophies images
+    Scrapes URL of HD trophy image
     """
 
     headers = {
@@ -109,6 +126,7 @@ def GetTrophyImage(_url):
     url_1 = block[urlStart:]
     urlEnd = url_1.find('"')
     urlTrophyImage = url_1[:urlEnd]
+    print("Pulling trophy image: "+urlTrophyImage)
     urlImagesHD.append(urlTrophyImage)
 
 
@@ -138,6 +156,7 @@ def ConsumeImages():
 def ProcessImage(_imageURL='', _local=False):
     """Add frame to images"""
 
+    print("Processing...")
     try:
         imgFrame = Image.open('./images/frame.png')
     except IOError:
@@ -150,6 +169,7 @@ def ProcessImage(_imageURL='', _local=False):
     if (_local):
         img = URL
     else:
+        print(URL)
         response = requests.get(URL, headers={'Cache-Control': 'no-cache'})
         img = BytesIO(response.content)
 
@@ -192,13 +212,26 @@ intro = """
 -----------------------
 BitImager - Kalopsia © 2020
 -----------------------
+"""
 
+prompt = """
 Input Game ID or type 0 to consume local images.
 
-Game ID: """
+"""
 
-gameID = int(input(intro))
-if (gameID != 0):
-    GetTrophiesHD(gameID)
-else:
-    ConsumeImages()
+print(intro)
+
+while True:
+    user_input = input(prompt)
+    if (user_input == 'exit'):
+        break
+    else:
+        try:
+            gameID = int(user_input)
+            if (int(gameID) == 0):
+                ConsumeImages()
+            else:
+                GetTrophiesHD(int(gameID))
+            print(user_input)
+        except ValueError:
+            print('Please enter a valid GameID or type `exit` to quit')

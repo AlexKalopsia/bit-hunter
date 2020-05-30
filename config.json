@@ -1,5 +1,5 @@
 {
-  "storeOriginals": false,
+  "storeOriginals": true,
   "acceptedTypes": [".PNG", ".JPG", ".JPEG"],
   "frameWidth": 15,
   "exportSizes": [240, 120],

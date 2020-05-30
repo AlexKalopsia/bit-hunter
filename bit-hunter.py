@@ -40,7 +40,7 @@ def LoadConfig():
         data = {
             'storeOriginals': False,
             'acceptedTypes': ['.PNG', '.JPG', '.JPEG'],
-            'frameWidth': 15,
+            'frameThickness': 15,
             'exportSizes': [240],
             'exportTypes': ['.PNG']
         }
@@ -52,7 +52,7 @@ def LoadConfig():
 config = LoadConfig()
 storeOriginals = config.get('storeOriginals')
 acceptedTypes = config.get('acceptedTypes')
-frameWidth = config.get('frameWidth')
+frameThickness = config.get('frameThickness')
 exportSizes = config.get('exportSizes')
 exportTypes = config.get('exportTypes')
 
@@ -199,12 +199,12 @@ def ProcessImage(_imageURL='', _local=False):
     imgTrophy_width = imgTrophy.width
     imgTrophy_height = imgTrophy.height
     imgTrophyInFrame_size = (
-        imgTrophy_width-(frameWidth*2), imgTrophy_width-(frameWidth*2))
+        imgTrophy_width-(frameThickness*2), imgTrophy_width-(frameThickness*2))
     imgTrophy_s = imgTrophy.resize(imgTrophyInFrame_size)
 
     imgFinal = Image.new('RGB', imgFrame_size, color='#fff')
     imgFinal.paste(imgFrame)
-    imgFinal.paste(imgTrophy_s, (frameWidth, frameWidth))
+    imgFinal.paste(imgTrophy_s, (frameThickness, frameThickness))
 
     for i, size in enumerate(exportSizes):
         imgResized = imgFinal.resize((size, size))

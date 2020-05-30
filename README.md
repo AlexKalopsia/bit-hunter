@@ -29,7 +29,7 @@ In the root folder you will find a `config.json` file. You can edit it to custom
 | -------------- | ------------------------------------------------------ | --------------- |
 | storeOriginals | If you want to store the original images without frame | `true`/`false`  |
 | acceptedTypes  | File types accepted                                    | `string`        |
-| frameWidth     | How thick is `frame.png` (in pixels)                   | `int`           |
+| frameThickness | How thick is `frame.png` (in pixels)                   | `int`           |
 | exportSizes    | Sizes you wish to export to (accepts multiple)         | `int`           |
 | exportTypes    | File types you wish to export to (accepts multiple)    | `string`        |
 

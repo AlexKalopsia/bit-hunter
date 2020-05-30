@@ -73,6 +73,7 @@ def GetTrophies(_url):
     URL = _url
     page = requests.get(URL, headers=headers)
     soup = BeautifulSoup(page.content, 'html.parser')
+
     images = soup.find_all("picture", class_="trophy")
 
     for image in images:
@@ -87,7 +88,7 @@ def GetTrophies(_url):
 def GetTrophiesHD(_gameID):
     """
     Scrapes all trophies URLs given a game ID.\n
-    Scrapes links to the single trophy pages
+    Scrapes trophy name and links to the single trophy pages
     """
 
     URL = "https://psnprofiles.com/trophies/"+str(_gameID)
@@ -95,6 +96,17 @@ def GetTrophiesHD(_gameID):
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:76.0) Gecko/20100101 Firefox/76.0"}
     page = requests.get(URL, headers=headers)
     soup = BeautifulSoup(page.content, 'html.parser')
+
+    titles = soup.findAll("div", class_="title flex v-align center")
+    gameTitle = ''
+    for title in titles:
+        info = str(title)
+        titleStart = info.find('<h3>')+4
+        titleEnd = info.find(" Trophies")
+        gameTitle = info[titleStart:titleEnd]
+        break
+    print("Game Title: "+gameTitle+"\n")
+
     blocks = soup.find_all('td', style="width: 100%;")
     for block in blocks:
         fullSnippet = str(block)
@@ -102,13 +114,19 @@ def GetTrophiesHD(_gameID):
         url_1 = fullSnippet[urlStart:]
         urlEnd = url_1.find('"')
         urlTrophy = "https://psnprofiles.com"+url_1[:urlEnd]
-        GetTrophyImage(urlTrophy)
+        titleStart = url_1.find('">')+2
+        titleEnd = url_1.find('</a>')
+        titleTrophy = url_1[titleStart:titleEnd]
+        #descStart = url_1.find('<br/>')+5
+        #descEnd = url_1.find('</td>')
+        #descTrophy = url_1[descStart:descEnd].strip()
+        GetTrophyImage(urlTrophy, titleTrophy)
     for urlTrophyImage in urlImagesHD:
         ProcessImage(urlTrophyImage)
     print("Processing complete\n\n")
 
 
-def GetTrophyImage(_url):
+def GetTrophyImage(_url, _title='', _desc=''):
     """
     Scrapes URL of HD trophy image
     """
@@ -126,7 +144,8 @@ def GetTrophyImage(_url):
     url_1 = block[urlStart:]
     urlEnd = url_1.find('"')
     urlTrophyImage = url_1[:urlEnd]
-    print("Pulling trophy image: "+urlTrophyImage)
+    print("Trophy: "+_title+"\n"+"Description: " +
+          _desc+"\nPulling image: "+urlTrophyImage)
     urlImagesHD.append(urlTrophyImage)
 
 
@@ -199,9 +218,10 @@ def ProcessImage(_imageURL='', _local=False):
             except KeyError:
                 if exportType == ".JPG":
                     if ".JPEG" in exportTypes:
-                        print("Cannot export to JPG.")
+                        print("Cannot export "+filename+" to JPG.")
                     else:
-                        print("Cannot export to JPG. Exporting to JPEG.")
+                        print("Cannot export "+filename +
+                              "to JPG. Exporting to JPEG.")
                         final = imgResized.save(
                             './images/processed/'+filename, 'JPEG')
                 else:
@@ -215,7 +235,7 @@ BitImager - Kalopsia © 2020
 """
 
 prompt = """
-Input Game ID or type 0 to consume local images.
+Input Game ID or type 0 to consume local images:
 
 """
 
@@ -223,7 +243,7 @@ print(intro)
 
 while True:
     user_input = input(prompt)
-    if (user_input == 'exit'):
+    if (user_input == 'exit' or user_input == 'q'):
         break
     else:
         try:
@@ -232,6 +252,5 @@ while True:
                 ConsumeImages()
             else:
                 GetTrophiesHD(int(gameID))
-            print(user_input)
         except ValueError:
             print('Please enter a valid GameID or type `exit` to quit')

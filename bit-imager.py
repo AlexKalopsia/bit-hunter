@@ -8,11 +8,15 @@ import requests
 import sys
 import os
 import config
+import json
 
 # Trophies scraping
 
 urlImages = []
 urlImagesHD = []
+
+with open('config.json') as json_data_file:
+    config = json.load(json_data_file)
 
 
 def GetTrophies(_url):
@@ -97,7 +101,7 @@ def ConsumeImages():
         for file in f:
             filename, file_extension = os.path.splitext(file)
             canChew = any(s in file_extension.upper()
-                          for s in config.fileTypes)
+                          for s in config['acceptedTypes'])
             if canChew:
                 path = os.path.join(r, file)
                 ProcessImage(path, True)
@@ -117,27 +121,25 @@ def ProcessImage(_imageURL='', _local=False):
         response = requests.get(URL, headers={'Cache-Control': 'no-cache'})
         img = BytesIO(response.content)
 
-        if (config.storeOriginals):
+        if (config['storeOriginals']):
             SaveImagesFromURL(URL)
 
     imgTrophy = Image.open(img)
     imgTrophy_width = imgTrophy.width
     imgTrophy_height = imgTrophy.height
     imgTrophyInFrame_size = (
-        imgTrophy_width-(config.frameWidth*2), imgTrophy_width-(config.frameWidth*2))
+        imgTrophy_width-(config['frameWidth']*2), imgTrophy_width-(config['frameWidth']*2))
     imgTrophy_s = imgTrophy.resize(imgTrophyInFrame_size)
 
     imgFinal = Image.new('RGB', imgFrame_size, color='#fff')
     imgFinal.paste(imgFrame)
-    imgFinal.paste(imgTrophy_s, (config.frameWidth, config.frameWidth))
+    imgFinal.paste(imgTrophy_s, (config['frameWidth'], config['frameWidth']))
 
-    sizes = config.exportSizes
-    types = config.exportTypes
+    sizes = config['exportSizes']
+    types = config['exportTypes']
     for i, size in enumerate(sizes):
         imgResized = imgFinal.resize((size, size))
-        print(filename)
         name, extension = os.path.splitext(filename)
-        print(name)
         for exportType in types:
             filename = name+"_"+str(size)+exportType.lower()
             final = imgResized.save(

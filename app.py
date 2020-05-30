@@ -131,8 +131,17 @@ def ProcessImage(_imageURL='', _local=False):
     imgFinal.paste(imgFrame)
     imgFinal.paste(imgTrophy_s, (config.frameWidth, config.frameWidth))
 
-    final = imgFinal.save(
-        './images/processed/'+filename, 'PNG')
+    sizes = config.exportSizes
+    types = config.exportTypes
+    for i, size in enumerate(sizes):
+        imgResized = imgFinal.resize((size, size))
+        print(filename)
+        name, extension = os.path.splitext(filename)
+        print(name)
+        for exportType in types:
+            filename = name+"_"+str(size)+exportType.lower()
+            final = imgResized.save(
+                './images/processed/'+filename, exportType[1:])
 
 
 gameID = int(input("Insert Game ID: "))

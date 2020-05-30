@@ -13,6 +13,7 @@ from bs4 import BeautifulSoup
 from pathlib import Path
 import requests
 import urllib.request
+import time
 
 
 folders = ('/consume', '/originals', '/processed')
@@ -106,7 +107,7 @@ def GetTrophiesHD(_gameID):
         gameTitle = info[titleStart:titleEnd]
         break
     print("Game Title: "+gameTitle+"\n")
-
+    time.sleep(0.5)
     blocks = soup.find_all('td', style="width: 100%;")
     for block in blocks:
         fullSnippet = str(block)
@@ -123,7 +124,8 @@ def GetTrophiesHD(_gameID):
         GetTrophyImage(urlTrophy, titleTrophy)
     for urlTrophyImage in urlImagesHD:
         ProcessImage(urlTrophyImage)
-    print("Processing complete\n\n")
+    print("\n\nAll the trophy images for " +
+          gameTitle+" have been processed!\n\n")
 
 
 def GetTrophyImage(_url, _title='', _desc=''):
@@ -144,8 +146,7 @@ def GetTrophyImage(_url, _title='', _desc=''):
     url_1 = block[urlStart:]
     urlEnd = url_1.find('"')
     urlTrophyImage = url_1[:urlEnd]
-    print("Trophy: "+_title+"\n"+"Description: " +
-          _desc+"\nPulling image: "+urlTrophyImage)
+    print("Trophy: "+_title)
     urlImagesHD.append(urlTrophyImage)
 
 
@@ -175,7 +176,7 @@ def ConsumeImages():
 def ProcessImage(_imageURL='', _local=False):
     """Add frame to images"""
 
-    print("Processing...")
+    print("\nProcessing "+_imageURL+"...")
     try:
         imgFrame = Image.open('./images/frame.png')
     except IOError:
@@ -188,7 +189,6 @@ def ProcessImage(_imageURL='', _local=False):
     if (_local):
         img = URL
     else:
-        print(URL)
         response = requests.get(URL, headers={'Cache-Control': 'no-cache'})
         img = BytesIO(response.content)
 
@@ -196,15 +196,15 @@ def ProcessImage(_imageURL='', _local=False):
             SaveImagesFromURL(URL)
 
     imgTrophy = Image.open(img)
-    imgTrophy_width = imgTrophy.width
-    imgTrophy_height = imgTrophy.height
-    imgTrophyInFrame_size = (
-        imgTrophy_width-(frameThickness*2), imgTrophy_width-(frameThickness*2))
-    imgTrophy_s = imgTrophy.resize(imgTrophyInFrame_size)
+    imgTrophy_w = int(imgTrophy.width)
+    imgTrophy_h = int(imgTrophy.height)
+    imgTrophyResized_size = (
+        imgTrophy_w-(frameThickness*2), imgTrophy_h-(frameThickness*2))
+    imgTrophyResized = imgTrophy.resize(imgTrophyResized_size)
 
     imgFinal = Image.new('RGB', imgFrame_size, color='#fff')
     imgFinal.paste(imgFrame)
-    imgFinal.paste(imgTrophy_s, (frameThickness, frameThickness))
+    imgFinal.paste(imgTrophyResized, (frameThickness, frameThickness))
 
     for i, size in enumerate(exportSizes):
         imgResized = imgFinal.resize((size, size))
@@ -230,17 +230,15 @@ def ProcessImage(_imageURL='', _local=False):
 
 intro = """
 -----------------------
-BitImager - Kalopsia © 2020
+BitHunter - Kalopsia © 2020
 -----------------------
 """
 
 prompt = """
 Input Game ID or type 0 to consume local images:
-
 """
 
 print(intro)
-
 while True:
     user_input = input(prompt)
     if (user_input == 'exit' or user_input == 'q'):

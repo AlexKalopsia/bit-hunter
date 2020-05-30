@@ -1,7 +1,7 @@
 {
   "storeOriginals": true,
   "acceptedTypes": [".PNG", ".JPG", ".JPEG"],
-  "frameWidth": 15,
+  "frameThickness": 15,
   "exportSizes": [240, 120],
   "exportTypes": [".PNG", ".JPEG"]
 }

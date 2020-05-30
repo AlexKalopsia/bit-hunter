@@ -134,7 +134,11 @@ def ConsumeImages():
 def ProcessImage(_imageURL='', _local=False):
     """Add frame to images"""
 
-    imgFrame = Image.open('./images/frame.png')
+    try:
+        imgFrame = Image.open('./images/frame.png')
+    except IOError:
+        print("Could not find frame image. Using default one.")
+        imgFrame = Image.new('RGB', (240, 240), color='#fff')
     imgFrame_size = imgFrame.size
     URL = _imageURL
     filename = URL.split('/')[-1]
@@ -176,6 +180,7 @@ BitImager - Kalopsia © 2020
 Input Game ID or type 0 to consume local images.
 
 Game ID: """
+
 gameID = int(input(intro))
 if (gameID != 0):
     GetTrophiesHD(gameID)

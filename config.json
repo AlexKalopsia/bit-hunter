@@ -2,6 +2,7 @@
   "storeOriginals": true,
   "acceptedTypes": [".PNG", ".JPG", ".JPEG"],
   "frameThickness": 15,
-  "exportSizes": [240, 120],
-  "exportTypes": [".PNG", ".JPEG"]
+  "exportSizes": [240],
+  "exportTypes": [".PNG"],
+  "imageNameRoot": "trophy"
 }

@@ -43,7 +43,8 @@ def LoadConfig():
             'acceptedTypes': ['.PNG', '.JPG', '.JPEG'],
             'frameThickness': 15,
             'exportSizes': [240],
-            'exportTypes': ['.PNG']
+            'exportTypes': ['.PNG'],
+            'imageNameRoot': ''
         }
         with open('config.json', 'w') as outfile:
             json.dump(data, outfile, indent=4)
@@ -56,10 +57,11 @@ acceptedTypes = config.get('acceptedTypes')
 frameThickness = config.get('frameThickness')
 exportSizes = config.get('exportSizes')
 exportTypes = config.get('exportTypes')
-
+imageNameRoot = config.get('imageNameRoot')
 
 urlImages = []
 urlImagesHD = []
+trophies = []
 
 
 def GetTrophies(_url):
@@ -99,14 +101,14 @@ def GetTrophiesHD(_gameID):
     soup = BeautifulSoup(page.content, 'html.parser')
 
     titles = soup.findAll("div", class_="title flex v-align center")
-    gameTitle = ''
+    game = ''
     for title in titles:
         info = str(title)
         titleStart = info.find('<h3>')+4
         titleEnd = info.find(" Trophies")
-        gameTitle = info[titleStart:titleEnd]
+        game = info[titleStart:titleEnd].replace('&amp;', '&')
         break
-    print("Game Title: "+gameTitle+"\n")
+    print("Game Title: "+game+"\n")
     time.sleep(0.5)
     blocks = soup.find_all('td', style="width: 100%;")
     for block in blocks:
@@ -122,10 +124,10 @@ def GetTrophiesHD(_gameID):
         #descEnd = url_1.find('</td>')
         #descTrophy = url_1[descStart:descEnd].strip()
         GetTrophyImage(urlTrophy, titleTrophy)
-    for urlTrophyImage in urlImagesHD:
-        ProcessImage(urlTrophyImage)
+    for name, desc, url in trophies:
+        ProcessImage(url, False, game, name)
     print("\n\nAll the trophy images for " +
-          gameTitle+" have been processed!\n\n")
+          game+" have been processed!\n\n")
 
 
 def GetTrophyImage(_url, _title='', _desc=''):
@@ -147,7 +149,7 @@ def GetTrophyImage(_url, _title='', _desc=''):
     urlEnd = url_1.find('"')
     urlTrophyImage = url_1[:urlEnd]
     print("Trophy: "+_title)
-    urlImagesHD.append(urlTrophyImage)
+    trophies.append((_title, _desc, urlTrophyImage))
 
 
 def SaveImagesFromURL(_imageURL):
@@ -173,7 +175,7 @@ def ConsumeImages():
                 ProcessImage(path, True)
 
 
-def ProcessImage(_imageURL='', _local=False):
+def ProcessImage(_imageURL='', _local=False, _game='', _trophy=''):
     """Add frame to images"""
 
     print("\nProcessing "+_imageURL+"...")
@@ -185,6 +187,19 @@ def ProcessImage(_imageURL='', _local=False):
     imgFrame_size = imgFrame.size
     URL = _imageURL
     filename = URL.split('/')[-1]
+    name, extension = os.path.splitext(filename)
+
+    if (imageNameRoot == 'g'):
+        name = _game.replace(' ', '-').lower() + '-'+name
+    elif (imageNameRoot == 't'):
+        name = _trophy.replace(' ', '-').lower() + '-'+name
+    elif (imageNameRoot == 'g-t'):
+        name = _trophy.replace(' ', '-').lower() + \
+            '-'+_trophy.replace(' ', '-').lower()+name
+    else:
+        name = imageNameRoot+name
+
+    filename = name
 
     if (_local):
         img = URL
@@ -208,7 +223,6 @@ def ProcessImage(_imageURL='', _local=False):
 
     for i, size in enumerate(exportSizes):
         imgResized = imgFinal.resize((size, size))
-        name, extension = os.path.splitext(filename)
         for exportType in exportTypes:
 
             filename = name+"_"+str(size)+exportType.lower()

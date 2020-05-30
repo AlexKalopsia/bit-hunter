@@ -25,13 +25,14 @@ If you already have some trophy images stored locally, and you want to just appl
 
 In the root folder you will find a `config.json` file. You can edit it to customize your settings.
 
-| Var            | Description                                            | Accepted values |
-| -------------- | ------------------------------------------------------ | --------------- |
-| storeOriginals | If you want to store the original images without frame | `true`/`false`  |
-| acceptedTypes  | File types accepted                                    | `string`        |
-| frameThickness | How thick is `frame.png` (in pixels)                   | `int`           |
-| exportSizes    | Sizes you wish to export to (accepts multiple)         | `int`           |
-| exportTypes    | File types you wish to export to (accepts multiple)    | `string`        |
+| Var            | Description                                                 | Accepted values              |
+| -------------- | ----------------------------------------------------------- | ---------------------------- |
+| storeOriginals | If you want to store the original images without frame      | `true`/`false`               |
+| acceptedTypes  | File types accepted                                         | `string`                     |
+| frameThickness | How thick is `frame.png` (in pixels)                        | `int`                        |
+| exportSizes    | Sizes you wish to export to (accepts multiple)              | `int`                        |
+| exportTypes    | File types you wish to export to (accepts multiple)         | `string`                     |
+| imageNameRoot  | Text before filename. `g` for game, `t` for trophy, or both | `string` / `g` / `t` / `g-t` |
 
 _Example 1:_
 

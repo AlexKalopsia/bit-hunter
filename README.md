@@ -42,9 +42,10 @@ _Example 1:_
     "frameWidth": 15,
     "exportSizes": [240, 120],
     "exportTypes": [".JPEG", ".PNG"]
+    "imageNameRoot": 'g-t'
 ```
 
-BitHunter will load the trophy images without storing them on your drive, and will then apply a 15pixel thick frame to them. It will export 240x240 and 120x120 images both in .jpeg and .png format
+BitHunter will load the trophy images without storing them on your drive, and will then apply a 15pixel thick frame to them. It will export 240x240 and 120x120 images both in .jpeg and .png format. The file name will be `gameName-trophyName-XXXXXXX.fileType`
 
 _Example 2:_
 
@@ -54,6 +55,20 @@ _Example 2:_
     "frameWidth": 20,
     "exportSizes": [64],
     "exportTypes": [".PNG"]
+    "imageNameRoot": 'test'
 ```
 
-BitHunter will load the trophy images and store them in the `/originals` folder. Then it will apply a 20px thick frame, and export 64x64 images both in .png format
+BitHunter will load the trophy images and store them in the `/originals` folder. Then it will apply a 20px thick frame, and export 64x64 images both in .png format. . The file name will be `test-XXXXXXX.fileType`
+
+_Example 3:_
+
+```
+    "storeOriginals": true,
+    "acceptedTypes": [".PNG", ".JPG", ".JPEG"],
+    "frameWidth": 4,
+    "exportSizes": [128, 64, 32],
+    "exportTypes": [".PNG"]
+    "imageNameRoot": ''
+```
+
+BitHunter will load the trophy images and store them in the `/originals` folder. Then it will apply a 4px thick frame, and export 128x128, 64x64 and 32x32 images both in .png format. . The file name will be `XXXXXXX.fileType`

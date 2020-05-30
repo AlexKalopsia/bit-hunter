@@ -189,15 +189,16 @@ def ProcessImage(_imageURL='', _local=False, _game='', _trophy=''):
     filename = URL.split('/')[-1]
     name, extension = os.path.splitext(filename)
 
-    if (imageNameRoot == 'g'):
-        name = _game.replace(' ', '-').lower() + '-'+name
-    elif (imageNameRoot == 't'):
-        name = _trophy.replace(' ', '-').lower() + '-'+name
-    elif (imageNameRoot == 'g-t'):
-        name = _trophy.replace(' ', '-').lower() + \
-            '-'+_trophy.replace(' ', '-').lower()+name
-    else:
-        name = imageNameRoot+name
+    if (imageNameRoot != ''):
+        if (imageNameRoot == 'g'):
+            name = _game.replace(' ', '-').lower() + '-'+name
+        elif (imageNameRoot == 't'):
+            name = _trophy.replace(' ', '-').lower() + '-'+name
+        elif (imageNameRoot == 'g-t'):
+            name = _trophy.replace(' ', '-').lower() + \
+                '-'+_trophy.replace(' ', '-').lower()+name
+        else:
+            name = imageNameRoot+name
 
     filename = name
 

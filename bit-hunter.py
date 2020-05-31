@@ -82,7 +82,7 @@ class Trophy:
 
         snippet = block[block.find('href="')+6:]
         self.imageURL = snippet[:snippet.find('"')]
-        print("Trophy: "+self.name+" "+self.imageURL)
+        print("Trophy: "+self.name)
 
 
 class Game:
@@ -175,7 +175,7 @@ def ProcessImage(_imageURL='', _local=False, _game='', _trophy=''):
             name = _trophy.replace(' ', '-').lower() + \
                 '-'+_trophy.replace(' ', '-').lower()+name
         else:
-            name = imageNameRoot+name
+            name = str(imageNameRoot+name)
 
     filename = name
 

@@ -59,97 +59,74 @@ exportSizes = config.get('exportSizes')
 exportTypes = config.get('exportTypes')
 imageNameRoot = config.get('imageNameRoot')
 
-urlImages = []
-urlImagesHD = []
-trophies = []
+
+class Trophy:
+    def __init__(self, _name='', _desc='', _url=''):
+        self.name = _name
+        self.desc = _desc
+        self.URL = _url
+        self.imageURL = None
+
+    def Scrape(self):
+        """
+        Scrapes URL of HD trophy image
+        """
+
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:76.0) Gecko/20100101 Firefox/76.0"}
+
+        page = requests.get(self.URL, headers=headers)
+        soup = BeautifulSoup(page.content, 'html.parser')
+        blocks = soup.find_all('td')
+        block = str(blocks[0])
+
+        snippet = block[block.find('href="')+6:]
+        self.imageURL = snippet[:snippet.find('"')]
+        print("Trophy: "+self.name+" "+self.imageURL)
 
 
-def GetTrophies(_url):
-    """
-    Scrapes all trophies SD images given a URL.\n
-    This is a fast scrape, but not ideal
-    """
+class Game:
 
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:76.0) Gecko/20100101 Firefox/76.0"}
+    def __init__(self, _id):
+        self.id = _id
+        self.name = None
+        self.platform = None
+        self.trophies = []
 
-    URL = _url
-    page = requests.get(URL, headers=headers)
-    soup = BeautifulSoup(page.content, 'html.parser')
+    def GetSoup(self):
+        URL = "https://psnprofiles.com/trophies/"+str(self.id)
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:76.0) Gecko/20100101 Firefox/76.0"}
+        page = requests.get(URL, headers=headers)
+        return BeautifulSoup(page.content, 'html.parser')
 
-    images = soup.find_all("picture", class_="trophy")
+    def GetName(self, _soup):
+        titles = _soup.findAll("div", class_="title flex v-align center")
+        for title in titles:
+            info = str(title)
+            titleStart = info.find('<h3>')+4
+            titleEnd = info.find(" Trophies")
+            self.name = info[titleStart:titleEnd].replace('&amp;', '&')
+            break
 
-    for image in images:
-        info = str(image)
-        urlStart = info.find('<img src="')+10
-        url_1 = info[urlStart:]
-        urlEnd = url_1.find('"')
-        urlImage = url_1[:urlEnd]
-        urlImages.append(urlImage)
+    def GetAllTrophies(self, _soup):
 
+        blocks = _soup.find_all('td', style="width: 100%;")
+        for block in blocks:
+            data = str(block)
+            snippet = data[data.find('href="')+6:]
 
-def GetTrophiesHD(_gameID):
-    """
-    Scrapes all trophies URLs given a game ID.\n
-    Scrapes trophy name and links to the single trophy pages
-    """
+            title = snippet[snippet.find('">')+2:snippet.find('</a>')]
+            URL = "https://psnprofiles.com"+snippet[:snippet.find('"')]
+            desc = snippet[snippet.find('<br/>')+5:snippet.find('</td>')]
 
-    URL = "https://psnprofiles.com/trophies/"+str(_gameID)
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:76.0) Gecko/20100101 Firefox/76.0"}
-    page = requests.get(URL, headers=headers)
-    soup = BeautifulSoup(page.content, 'html.parser')
+            trophy = Trophy(title, desc, URL)
+            self.trophies.append(trophy)
 
-    titles = soup.findAll("div", class_="title flex v-align center")
-    game = ''
-    for title in titles:
-        info = str(title)
-        titleStart = info.find('<h3>')+4
-        titleEnd = info.find(" Trophies")
-        game = info[titleStart:titleEnd].replace('&amp;', '&')
-        break
-    print("Game Title: "+game+"\n")
-    time.sleep(0.5)
-    blocks = soup.find_all('td', style="width: 100%;")
-    for block in blocks:
-        fullSnippet = str(block)
-        urlStart = fullSnippet.find('href="')+6
-        url_1 = fullSnippet[urlStart:]
-        urlEnd = url_1.find('"')
-        urlTrophy = "https://psnprofiles.com"+url_1[:urlEnd]
-        titleStart = url_1.find('">')+2
-        titleEnd = url_1.find('</a>')
-        titleTrophy = url_1[titleStart:titleEnd]
-        #descStart = url_1.find('<br/>')+5
-        #descEnd = url_1.find('</td>')
-        #descTrophy = url_1[descStart:descEnd].strip()
-        GetTrophyImage(urlTrophy, titleTrophy)
-    for name, desc, url in trophies:
-        ProcessImage(url, False, game, name)
-    print("\n\nAll the trophy images for " +
-          game+" have been processed!\n\n")
-
-
-def GetTrophyImage(_url, _title='', _desc=''):
-    """
-    Scrapes URL of HD trophy image
-    """
-
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:76.0) Gecko/20100101 Firefox/76.0"}
-    URL = _url
-
-    page = requests.get(URL, headers=headers)
-    soup = BeautifulSoup(page.content, 'html.parser')
-    blocks = soup.find_all('td')
-    block = str(blocks[0])
-
-    urlStart = block.find('href="')+6
-    url_1 = block[urlStart:]
-    urlEnd = url_1.find('"')
-    urlTrophyImage = url_1[:urlEnd]
-    print("Trophy: "+_title)
-    trophies.append((_title, _desc, urlTrophyImage))
+    def ProcessAllTrophies(self):
+        for trophy in self.trophies:
+            trophy.Scrape()
+            ProcessImage(trophy.imageURL, False, self.name, trophy.name)
 
 
 def SaveImagesFromURL(_imageURL):
@@ -178,7 +155,7 @@ def ConsumeImages():
 def ProcessImage(_imageURL='', _local=False, _game='', _trophy=''):
     """Add frame to images"""
 
-    print("\nProcessing "+_imageURL+"...")
+    print("Processing "+_imageURL+"...\n")
     try:
         imgFrame = Image.open('./frame.png')
     except IOError:
@@ -263,7 +240,17 @@ while True:
             gameID = int(user_input)
             if (int(gameID) == 0):
                 ConsumeImages()
+                print("\n\nAll the trophy images have been processed!\n\n")
             else:
-                GetTrophiesHD(int(gameID))
+                game = Game(int(gameID))
+                soup = game.GetSoup()
+                game.GetName(soup)
+                print("Game Title: "+game.name+"\n")
+                time.sleep(0.5)
+                game.GetAllTrophies(soup)
+                game.ProcessAllTrophies()
+                print("\n\nAll the trophy images for " +
+                      game.name+" have been processed!\n\n")
+
         except ValueError:
             print('Please enter a valid GameID or type `exit` to quit')

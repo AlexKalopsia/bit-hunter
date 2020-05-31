@@ -1,25 +1,25 @@
 # BitHunter
 
-BitHunter is a tool to pull trophy images from PSNProfiles and to apply custom frames to trophy images.
+BitHunter is a tool to pull trophy images and apply custom frames to them.
 The tool can be configured to export to multiple sizes and multiple formats.
 
 ## How to use
 
-When you run BitHunter, you have two options, adding frames to local images (typing `0`), or pulling the images from PSNProfiles.
+When you run BitHunter, you have two options, adding frames to local images (typing `0`), or pulling the images from the web.
 
 If you want to apply a custom frame to the images, create one called `frame.png` and place it inside the root folder.
 
-### Pulling from PSNProfiles
+### Pulling from the web
 
-BitHunter will ask you to type a GameID. This can be found in the PSNProfiles game page as part of the game's URL
+BitHunter will ask you to type a GameID. This can be found in the game page as part of the game's URL
 
 `https://psnprofiles.com/trophies/GameID-game-name`
 
-After pressing Enter, BitHunter will start pulling all the images and resizing them. If you have set `storeOriginals` to `true`, the original non-framed images will be stored in `/originals`. The framed images will be stored in `/processed/`
+After pressing Enter, BitHunter will start pulling all the images and resizing them. The framed images will be stored in `/processed/`. If you have set yout configuration file with `storeOriginals` set to `true`, the original non-framed images will be stored in `/originals`.
 
 ### Processing local images
 
-If you already have some trophy images stored locally, and you want to just apply the frame to them, place all of them in the `/consume` folder. Then start BitImager and press `0`
+If you already have some trophy images stored locally, and you want to just apply the frame to them, place all of them in the `/consume` folder. Then start BitImager and press `0`. Make sure the frame thickness is configured correctly in the configuration file.
 
 ## Config file
 

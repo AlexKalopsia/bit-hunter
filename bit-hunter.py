@@ -14,19 +14,22 @@ from pathlib import Path
 import requests
 import urllib.request
 import time
+import re
 
 
-folders = ('/consume', '/originals', '/processed')
-mkdir = False
-for i, path in enumerate(folders):
-    if (os.path.exists('.'+path)):
-        pass
-    else:
-        mkdir = True
-        os.makedirs('.'+path)
-        print("Generating images"+path+" folder...")
-    if (i == len(folders)-1) and mkdir:
-        print("-------------------------------")
+def CheckFolders():
+    """Creates image folders if any is missing"""
+    folders = ('/consume', '/originals', '/processed')
+    mkdir = False
+    for i, path in enumerate(folders):
+        if (os.path.exists('.'+path)):
+            pass
+        else:
+            mkdir = True
+            os.makedirs('.'+path)
+            print("Generating "+path+" folder...")
+        if (i == len(folders)-1) and mkdir:
+            print("-------------------------------")
 
 
 def LoadConfig():
@@ -44,13 +47,15 @@ def LoadConfig():
             'frameThickness': 15,
             'exportSizes': [240],
             'exportTypes': ['.PNG'],
-            'imageNameRoot': ''
+            'imageNameRoot': '',
+            'imageNameEnd': ''
         }
         with open('config.json', 'w') as outfile:
             json.dump(data, outfile, indent=4)
     return data
 
 
+CheckFolders()
 config = LoadConfig()
 storeOriginals = config.get('storeOriginals')
 acceptedTypes = config.get('acceptedTypes')
@@ -58,19 +63,17 @@ frameThickness = config.get('frameThickness')
 exportSizes = config.get('exportSizes')
 exportTypes = config.get('exportTypes')
 imageNameRoot = config.get('imageNameRoot')
+imageNameEnd = config.get('imageNameEnd')
 
 
 class Trophy:
+
     def __init__(self, _name='', _desc='', _url=''):
-        self.name = _name
-        self.desc = _desc
-        self.URL = _url
+        self.name, self.desc, self.URL = _name, _desc, _url
         self.imageURL = None
 
     def Scrape(self):
-        """
-        Scrapes URL of HD trophy image
-        """
+        """Scrapes URL of HD trophy image"""
 
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:76.0) Gecko/20100101 Firefox/76.0"}
@@ -88,12 +91,12 @@ class Trophy:
 class Game:
 
     def __init__(self, _id):
-        self.id = _id
-        self.name = None
-        self.platform = None
+        self.id, self.name, self.platform = _id, None, None
         self.trophies = []
 
     def GetSoup(self):
+        """Pulls HTML data from game page"""
+
         URL = "https://psnprofiles.com/trophies/"+str(self.id)
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:76.0) Gecko/20100101 Firefox/76.0"}
@@ -104,12 +107,12 @@ class Game:
         titles = _soup.findAll("div", class_="title flex v-align center")
         for title in titles:
             info = str(title)
-            titleStart = info.find('<h3>')+4
-            titleEnd = info.find(" Trophies")
-            self.name = info[titleStart:titleEnd].replace('&amp;', '&')
+            self.name = info[info.find(
+                '<h3>')+4:info.find(" Trophies")].replace('&amp;', '&')
             break
 
     def GetAllTrophies(self, _soup):
+        """Stores information of every trophy"""
 
         blocks = _soup.find_all('td', style="width: 100%;")
         for block in blocks:
@@ -124,12 +127,15 @@ class Game:
             self.trophies.append(trophy)
 
     def ProcessAllTrophies(self):
+        """Scrapes image and apply frame to every image"""
+
         for trophy in self.trophies:
             trophy.Scrape()
             ProcessImage(trophy.imageURL, False, self.name, trophy.name)
 
 
 def SaveImagesFromURL(_imageURL):
+
     URL = _imageURL
     filename = URL.split('/')[-1]
     urllib.request.urlretrieve(
@@ -152,6 +158,12 @@ def ConsumeImages():
                 ProcessImage(path, True)
 
 
+def Slugify(value):
+    """Removes invalid characters from string"""
+    value = re.sub(r'[^\w\s-]', '', value.lower())
+    return re.sub(r'[-\s]+', '-', value).strip('-_').replace('.', '')
+
+
 def ProcessImage(_imageURL='', _local=False, _game='', _trophy=''):
     """Add frame to images"""
 
@@ -163,21 +175,6 @@ def ProcessImage(_imageURL='', _local=False, _game='', _trophy=''):
         imgFrame = Image.new('RGB', (240, 240), color='#fff')
     imgFrame_size = imgFrame.size
     URL = _imageURL
-    filename = URL.split('/')[-1]
-    name, extension = os.path.splitext(filename)
-
-    if (imageNameRoot != ''):
-        if (imageNameRoot == 'g'):
-            name = _game.replace(' ', '-').lower() + '-'+name
-        elif (imageNameRoot == 't'):
-            name = _trophy.replace(' ', '-').lower() + '-'+name
-        elif (imageNameRoot == 'g-t'):
-            name = _trophy.replace(' ', '-').lower() + \
-                '-'+_trophy.replace(' ', '-').lower()+name
-        else:
-            name = str(imageNameRoot+name)
-
-    filename = name
 
     if (_local):
         img = URL
@@ -202,8 +199,21 @@ def ProcessImage(_imageURL='', _local=False, _game='', _trophy=''):
     for i, size in enumerate(exportSizes):
         imgResized = imgFinal.resize((size, size))
         for exportType in exportTypes:
-
-            filename = name+"_"+str(size)+exportType.lower()
+            filename = URL.split('/')[-1]
+            name, extension = os.path.splitext(filename)
+            name = Slugify(name)
+            trophy = Slugify(_trophy)
+            game = Slugify(_game)
+            root = imageNameRoot.replace(
+                '@g', game).replace('@t', trophy).replace('@s', str(size))
+            if root != '':
+                root = root+'-'
+            name = root+name
+            end = imageNameEnd.replace(
+                '@g', game).replace('@t', trophy).replace('@s', str(size))
+            if end != '':
+                end = '-'+end
+            filename = name+'-'+imageNameEnd+exportType.lower()
             try:
                 final = imgResized.save(
                     './processed/'+filename, exportType[1:])
@@ -240,7 +250,7 @@ while True:
             gameID = int(user_input)
             if (int(gameID) == 0):
                 ConsumeImages()
-                print("\n\nAll the trophy images have been processed!\n\n")
+                print("\nAll the trophy images have been processed!\n\n")
             else:
                 game = Game(int(gameID))
                 soup = game.GetSoup()

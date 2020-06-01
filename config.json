@@ -4,5 +4,6 @@
   "frameThickness": 15,
   "exportSizes": [240],
   "exportTypes": [".PNG"],
-  "imageNameRoot": "t"
+  "imageNameRoot": "psbit-@s",
+  "imageNameEnd": "@g"
 }

@@ -77,7 +77,6 @@ class Trophy:
 
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:76.0) Gecko/20100101 Firefox/76.0"}
-        print(self)
         try:
             page = requests.get(self.URL, headers=headers)
         except requests.exceptions.RequestException as e:
@@ -136,7 +135,6 @@ class Game:
 
         for trophy in self.trophies:
             if trophy.Scrape():
-                print(self.name)
                 ProcessImage(trophy.imageURL, False, self.name, trophy.name)
 
 
@@ -219,7 +217,7 @@ def ProcessImage(_imageURL='', _local=False, _game='', _trophy=''):
                 '@g', game).replace('@t', trophy).replace('@s', str(size))
             if end != '':
                 end = '-'+end
-            filename = name+'-'+imageNameEnd+exportType.lower()
+            filename = name+'-'+end+exportType.lower()
             try:
                 final = imgResized.save(
                     './processed/'+filename, exportType[1:])
@@ -261,7 +259,7 @@ while True:
                 game = Game(int(gameID))
                 soup = game.GetSoup()
                 game.GetName(soup)
-                print("Game Title: "+game.name+"\n")
+                print("\nGame Title: "+game.name+"\n")
                 time.sleep(0.5)
                 game.GetAllTrophies(soup)
                 game.ProcessAllTrophies()

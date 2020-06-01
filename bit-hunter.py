@@ -68,8 +68,8 @@ imageNameEnd = config.get('imageNameEnd')
 
 class Trophy:
 
-    def __init__(self, _name='', _desc='', _url=''):
-        self.name, self.desc, self.URL = _name, _desc, _url
+    def __init__(self, _name='', _desc='', _type='', _url=''):
+        self.name, self.desc, self.type, self.URL = _name, _desc, _type, _url
         self.imageURL = None
 
     def Scrape(self):
@@ -85,10 +85,9 @@ class Trophy:
         soup = BeautifulSoup(page.content, 'html.parser')
         blocks = soup.find_all('td')
         block = str(blocks[0])
-
         snippet = block[block.find('href="')+6:]
         self.imageURL = snippet[:snippet.find('"')]
-        print("Trophy: "+self.name)
+        print("Trophy:\n"+self.name+" ("+self.type+")\n"+self.desc)
         return True
 
 
@@ -118,17 +117,20 @@ class Game:
     def GetAllTrophies(self, _soup):
         """Stores information of every trophy"""
 
-        blocks = _soup.find_all('td', style="width: 100%;")
-        for block in blocks:
-            data = str(block)
-            snippet = data[data.find('href="')+6:]
-
-            title = snippet[snippet.find('">')+2:snippet.find('</a>')]
-            URL = "https://psnprofiles.com"+snippet[:snippet.find('"')]
-            desc = snippet[snippet.find('<br/>')+5:snippet.find('</td>')]
-
-            trophy = Trophy(title, desc, URL)
-            self.trophies.append(trophy)
+        tables = _soup.find_all(
+            'table', class_='zebra')
+        for table in tables:
+            rows = table.find_all('tr', class_='')
+            for row in rows:
+                columns = row.find_all('td')
+                if len(columns) == 6:
+                    name = columns[1].find('a').get_text()
+                    desc = columns[1].get_text().replace(name, '').strip()
+                    URL = "https://psnprofiles.com" + \
+                        columns[1].find('a').get('href')
+                    type_ = columns[5].find('img').get('title')
+                    trophy = Trophy(name, desc, type_, URL)
+                    self.trophies.append(trophy)
 
     def ProcessAllTrophies(self):
         """Scrapes image and apply frame to every image"""

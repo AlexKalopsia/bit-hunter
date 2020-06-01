@@ -25,14 +25,15 @@ If you already have some trophy images stored locally, and you want to just appl
 
 In the root folder you will find a `config.json` file. You can edit it to customize your settings.
 
-| Var            | Description                                                 | Accepted values              |
-| -------------- | ----------------------------------------------------------- | ---------------------------- |
-| storeOriginals | If you want to store the original images without frame      | `true`/`false`               |
-| acceptedTypes  | File types accepted                                         | `string`                     |
-| frameThickness | How thick is `frame.png` (in pixels)                        | `int`                        |
-| exportSizes    | Sizes you wish to export to (accepts multiple)              | `int`                        |
-| exportTypes    | File types you wish to export to (accepts multiple)         | `string`                     |
-| imageNameRoot  | Text before filename. `g` for game, `t` for trophy, or both | `string` / `g` / `t` / `g-t` |
+| Var            | Description                                                       | Accepted values |
+| -------------- | ----------------------------------------------------------------- | --------------- |
+| storeOriginals | If you want to store the original images without frame            | `true`/`false`  |
+| acceptedTypes  | File types accepted                                               | `string`        |
+| frameThickness | How thick is `frame.png` (in pixels)                              | `int`           |
+| exportSizes    | Sizes you wish to export to (accepts multiple)                    | `int`           |
+| exportTypes    | File types you wish to export to (accepts multiple)               | `string`        |
+| imageNameRoot  | Text before filename. Accepts `@g`/`@t`/`@s` for game/trophy/size | `string`        |
+| imageNameEnd   | Text after filename. Accepts `@g`/`@t`/`@s` for game/trophy/size  | `string`        |
 
 _Example 1:_
 
@@ -42,10 +43,11 @@ _Example 1:_
     "frameWidth": 15,
     "exportSizes": [240, 120],
     "exportTypes": [".JPEG", ".PNG"]
-    "imageNameRoot": 'g-t'
+    "imageNameRoot": 'bit-@t',
+    "imageNameEnd": '@s'
 ```
 
-BitHunter will load the trophy images without storing them on your drive, and will then apply a 15pixel thick frame to them. It will export 240x240 and 120x120 images both in .jpeg and .png format. The file name will be `gameName-trophyName-XXXXXXX.fileType`
+BitHunter will load the trophy images without storing them on your drive, and will then apply a 15pixel thick frame to them. It will export 240x240 and 120x120 images both in .jpeg and .png format. The file name will be `bit-trophyName-XXXXXXX-imageSize.fileType`
 
 _Example 2:_
 
@@ -55,10 +57,11 @@ _Example 2:_
     "frameWidth": 20,
     "exportSizes": [64],
     "exportTypes": [".PNG"]
-    "imageNameRoot": 'test'
+    "imageNameRoot": '@g-wow-@s',
+    "imageNameEnd": '@t'
 ```
 
-BitHunter will load the trophy images and store them in the `/originals` folder. Then it will apply a 20px thick frame, and export 64x64 images both in .png format. . The file name will be `test-XXXXXXX.fileType`
+BitHunter will load the trophy images and store them in the `/originals` folder. Then it will apply a 20px thick frame, and export 64x64 images both in .png format. . The file name will be `gameName-wow-imageSize-XXXXXXX-trophyName.fileType`
 
 _Example 3:_
 
@@ -69,6 +72,7 @@ _Example 3:_
     "exportSizes": [128, 64, 32],
     "exportTypes": [".PNG"]
     "imageNameRoot": ''
+    "imageNameEnd": ''
 ```
 
 BitHunter will load the trophy images and store them in the `/originals` folder. Then it will apply a 4px thick frame, and export 128x128, 64x64 and 32x32 images both in .png format. . The file name will be `XXXXXXX.fileType`

@@ -1,7 +1,7 @@
 # BitHunter
 
-BitHunter is a tool to pull trophy images and apply custom frames to them.
-The tool can be configured to export to multiple sizes and multiple formats.
+BitHunter is a tool to pull trophy information and apply custom frames to their images.
+The tool can be configured to export to multiple image sizes and multiple formats.
 
 ## How to use
 

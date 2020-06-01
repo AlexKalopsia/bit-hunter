@@ -28,8 +28,8 @@ In the root folder you will find a `config.json` file. You can edit it to custom
 | Var            | Description                                                       | Accepted values |
 | -------------- | ----------------------------------------------------------------- | --------------- |
 | storeOriginals | If you want to store the original images without frame            | `true`/`false`  |
-| acceptedTypes  | File types accepted                                               | `string`        |
-| frameThickness | How thick is `frame.png` (in pixels)                              | `int`           |
+| acceptedTypes  | Accepted file types                                               | `string`        |
+| frameThickness | How thick `frame.png` is (in pixels)                              | `int`           |
 | exportSizes    | Sizes you wish to export to (accepts multiple)                    | `int`           |
 | exportTypes    | File types you wish to export to (accepts multiple)               | `string`        |
 | imageNameRoot  | Text before filename. Accepts `@g`/`@t`/`@s` for game/trophy/size | `string`        |

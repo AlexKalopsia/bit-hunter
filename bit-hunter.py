@@ -77,8 +77,12 @@ class Trophy:
 
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:76.0) Gecko/20100101 Firefox/76.0"}
-
-        page = requests.get(self.URL, headers=headers)
+        print(self)
+        try:
+            page = requests.get(self.URL, headers=headers)
+        except requests.exceptions.RequestException as e:
+            print("Invalid get request for "+self.URL+"\n")
+            return False
         soup = BeautifulSoup(page.content, 'html.parser')
         blocks = soup.find_all('td')
         block = str(blocks[0])
@@ -86,6 +90,7 @@ class Trophy:
         snippet = block[block.find('href="')+6:]
         self.imageURL = snippet[:snippet.find('"')]
         print("Trophy: "+self.name)
+        return True
 
 
 class Game:
@@ -130,8 +135,9 @@ class Game:
         """Scrapes image and apply frame to every image"""
 
         for trophy in self.trophies:
-            trophy.Scrape()
-            ProcessImage(trophy.imageURL, False, self.name, trophy.name)
+            if trophy.Scrape():
+                print(self.name)
+                ProcessImage(trophy.imageURL, False, self.name, trophy.name)
 
 
 def SaveImagesFromURL(_imageURL):

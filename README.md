@@ -1,6 +1,6 @@
 # BitHunter
 
-BitHunter is a tool to pull trophy information and apply custom frames to their images.
+BitHunter is a tool to pull PS4 game trophies information and/or apply custom frames to the trophy images.
 The tool can be configured to export to multiple image sizes and multiple formats.
 
 ## How to use
@@ -15,7 +15,10 @@ BitHunter will ask you to type a GameID. This can be found in the game page as p
 
 `https://psnprofiles.com/trophies/GameID-game-name`
 
-After pressing Enter, BitHunter will start pulling all the images and resizing them. The framed images will be stored in `/processed`. If you have set yout configuration file with `storeOriginals` set to `true`, the original non-framed images will be stored in `/originals`.
+After pressing Enter, BitHunter will start pulling the game data:
+* If you have set your configuration file with `exportTrophyInfo` set to `true`, a file named `gameID-gameName.csv` will be saved in the root folder.
+* If you have set yout configuration file with `storeOriginals` set to `true`, the original non-framed images will be stored in `/originals`.
+* If you have set your configuration file with `processOriginals` set to `true`, the trophy images will be processed with the applied frame image and saved in `/processed`. 
 
 ### Processing local images
 

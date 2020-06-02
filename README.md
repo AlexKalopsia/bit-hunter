@@ -25,20 +25,24 @@ If you already have some trophy images stored locally, and you want to just appl
 
 In the root folder you will find a `config.json` file. You can edit it to customize your settings.
 
-| Var            | Description                                                       | Accepted values |
-| -------------- | ----------------------------------------------------------------- | --------------- |
-| storeOriginals | If you want to store the original images without frame            | `true`/`false`  |
-| acceptedTypes  | Accepted file types                                               | `string`        |
-| frameThickness | How thick `frame.png` is (in pixels)                              | `int`           |
-| exportSizes    | Sizes you wish to export to (accepts multiple)                    | `int`           |
-| exportTypes    | File types you wish to export to (accepts multiple)               | `string`        |
-| imageNameRoot  | Text before filename. Accepts `@g`/`@t`/`@s` for game/trophy/size | `string`        |
-| imageNameEnd   | Text after filename. Accepts `@g`/`@t`/`@s` for game/trophy/size  | `string`        |
+| Var             | Description                                                       | Accepted values |
+| --------------- | ----------------------------------------------------------------- | --------------- |
+| exportTrophyInfo| Export the trophy data to a CSV file                              | `true`/`false`  |
+| storeOriginals  | Store the original images without frame                           | `true`/`false`  |
+| processOriginals| Process the original images and apply the frame                   | `true`/`false`  |
+| acceptedTypes   | Accepted file types                                               | `string`        |
+| frameThickness  | How thick `frame.png` is (in pixels)                              | `int`           |
+| exportSizes     | Sizes you wish to export to (accepts multiple)                    | `int`           |
+| exportTypes     | File types you wish to export to (accepts multiple)               | `string`        |
+| imageNameRoot   | Text before filename. Accepts `@g`/`@t`/`@s` for game/trophy/size | `string`        |
+| imageNameEnd    | Text after filename. Accepts `@g`/`@t`/`@s` for game/trophy/size  | `string`        |
 
 _Example 1:_
 
 ```
+    "exportTrophyInfo": false,
     "storeOriginals": false,
+    "processOriginals": true,
     "acceptedTypes": [".PNG", ".JPG", ".JPEG"],
     "frameWidth": 15,
     "exportSizes": [240, 120],
@@ -52,7 +56,9 @@ BitHunter will load the trophy images without storing them on your drive, and wi
 _Example 2:_
 
 ```
+    "exportTrophyInfo": true,
     "storeOriginals": true,
+    "processOriginals": true,
     "acceptedTypes": [".PNG", ".JPG", ".JPEG"],
     "frameWidth": 20,
     "exportSizes": [64],
@@ -61,12 +67,14 @@ _Example 2:_
     "imageNameEnd": '@t'
 ```
 
-BitHunter will load the trophy images and store them in the `/originals` folder. Then it will apply a 20px thick frame, and export 64x64 images both in .png format. . The file name will be `gameName-wow-imageSize-XXXXXXX-trophyName.fileType`
+BitHunter will store the game's trophies information in a .CSV file. It will then load the trophy images and store them in the `/originals` folder. Then it will apply a 20px thick frame, and export 64x64 images both in .png format. . The file name will be `gameName-wow-imageSize-XXXXXXX-trophyName.fileType`
 
 _Example 3:_
 
 ```
+    "exportTrophyInfo": false,
     "storeOriginals": true,
+    "processOriginals": true,
     "acceptedTypes": [".PNG", ".JPG", ".JPEG"],
     "frameWidth": 4,
     "exportSizes": [128, 64, 32],
@@ -76,3 +84,19 @@ _Example 3:_
 ```
 
 BitHunter will load the trophy images and store them in the `/originals` folder. Then it will apply a 4px thick frame, and export 128x128, 64x64 and 32x32 images both in .png format. . The file name will be `XXXXXXX.fileType`
+
+_Example 4:_
+
+```
+    "exportTrophyInfo": true,
+    "storeOriginals": false,
+    "processOriginals": false,
+    "acceptedTypes": [".PNG", ".JPG", ".JPEG"],
+    "frameWidth": 4,
+    "exportSizes": [128, 64, 32],
+    "exportTypes": [".PNG"]
+    "imageNameRoot": ''
+    "imageNameEnd": ''
+```
+
+BitHunter will only save the game's trophies information in a .CSV file. It will not store, nor process the trophy images.

@@ -9,3 +9,4 @@ consume/*.*
 /dist
 /build
 *.spec
+*.csv

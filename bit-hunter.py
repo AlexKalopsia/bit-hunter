@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-# Copyright 2020 by Alex Camilleri.
-# All rights reserved.
+# Bit-Hunter by Alex Camilleri.
 
 from io import BytesIO
 import json
@@ -13,6 +12,7 @@ from bs4 import BeautifulSoup
 from pathlib import Path
 import requests
 import urllib.request
+import csv
 import time
 import re
 
@@ -42,7 +42,9 @@ def LoadConfig():
     except FileNotFoundError:
         print("Could not find config.json. Generating one with default values...")
         data = {
+            'exportTrophyInfo': True,
             'storeOriginals': False,
+            'processOriginals': True,
             'acceptedTypes': ['.PNG', '.JPG', '.JPEG'],
             'frameThickness': 15,
             'exportSizes': [240],
@@ -57,38 +59,15 @@ def LoadConfig():
 
 CheckFolders()
 config = LoadConfig()
+exportTrophyInfo = config.get('exportTrophyInfo')
 storeOriginals = config.get('storeOriginals')
+processOriginals = config.get('processOriginals')
 acceptedTypes = config.get('acceptedTypes')
 frameThickness = config.get('frameThickness')
 exportSizes = config.get('exportSizes')
 exportTypes = config.get('exportTypes')
 imageNameRoot = config.get('imageNameRoot')
 imageNameEnd = config.get('imageNameEnd')
-
-
-class Trophy:
-
-    def __init__(self, _name='', _desc='', _type='', _url=''):
-        self.name, self.desc, self.type, self.URL = _name, _desc, _type, _url
-        self.imageURL = None
-
-    def Scrape(self):
-        """Scrapes URL of HD trophy image"""
-
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:76.0) Gecko/20100101 Firefox/76.0"}
-        try:
-            page = requests.get(self.URL, headers=headers)
-        except requests.exceptions.RequestException as e:
-            print("Invalid get request for "+self.URL+"\n")
-            return False
-        soup = BeautifulSoup(page.content, 'html.parser')
-        blocks = soup.find_all('td')
-        block = str(blocks[0])
-        snippet = block[block.find('href="')+6:]
-        self.imageURL = snippet[:snippet.find('"')]
-        print("Trophy:\n"+self.name+" ("+self.type+")\n"+self.desc)
-        return True
 
 
 class Game:
@@ -132,20 +111,49 @@ class Game:
                     trophy = Trophy(name, desc, type_, URL)
                     self.trophies.append(trophy)
 
+    def ExportGameDataToCSV(self):
+        with (open(Slugify(self.name)+'.csv', 'w', newline='')) as f:
+            writer = csv.writer(f)
+            writer.writerow(['Name', 'Description', 'Type'])
+            for trophy in self.trophies:
+                writer.writerow([trophy.name, trophy.desc, trophy.type])
+            print("Game trophies info exported to "+Slugify(self.name)+".csv")
+
     def ProcessAllTrophies(self):
         """Scrapes image and apply frame to every image"""
 
         for trophy in self.trophies:
             if trophy.Scrape():
-                ProcessImage(trophy.imageURL, False, self.name, trophy.name)
+                if storeOriginals:
+                    StoreRemoteImage(trophy.imageURL)
+                if processOriginals:
+                    ProcessImage(trophy.imageURL, False,
+                                 self.name, trophy.name)
 
 
-def SaveImagesFromURL(_imageURL):
+class Trophy:
 
-    URL = _imageURL
-    filename = URL.split('/')[-1]
-    urllib.request.urlretrieve(
-        URL, "./originals/"+filename)
+    def __init__(self, _name='', _desc='', _type='', _url=''):
+        self.name, self.desc, self.type, self.URL = _name, _desc, _type, _url
+        self.imageURL = None
+
+    def Scrape(self):
+        """Scrapes URL of HD trophy image"""
+
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:76.0) Gecko/20100101 Firefox/76.0"}
+        try:
+            page = requests.get(self.URL, headers=headers)
+        except requests.exceptions.RequestException as e:
+            print("Invalid get request for "+self.URL+"\n")
+            return False
+        soup = BeautifulSoup(page.content, 'html.parser')
+        blocks = soup.find_all('td')
+        block = str(blocks[0])
+        snippet = block[block.find('href="')+6:]
+        self.imageURL = snippet[:snippet.find('"')]
+        print("\nTrophy:\n"+self.name+" ("+self.type+")\n"+self.desc)
+        return True
 
 
 def ConsumeImages():
@@ -170,10 +178,17 @@ def Slugify(value):
     return re.sub(r'[-\s]+', '-', value).strip('-_').replace('.', '')
 
 
+def StoreRemoteImage(_imageURL):
+    URL = _imageURL
+    filename = URL.split('/')[-1]
+    urllib.request.urlretrieve(
+        URL, "./originals/"+filename)
+
+
 def ProcessImage(_imageURL='', _local=False, _game='', _trophy=''):
     """Add frame to images"""
 
-    print("Processing "+_imageURL+"...\n")
+    print("Processing "+_imageURL+"...")
     try:
         imgFrame = Image.open('./frame.png')
     except IOError:
@@ -187,9 +202,6 @@ def ProcessImage(_imageURL='', _local=False, _game='', _trophy=''):
     else:
         response = requests.get(URL, headers={'Cache-Control': 'no-cache'})
         img = BytesIO(response.content)
-
-        if (storeOriginals):
-            SaveImagesFromURL(URL)
 
     imgTrophy = Image.open(img)
     imgTrophy_w = int(imgTrophy.width)
@@ -238,7 +250,12 @@ def ProcessImage(_imageURL='', _local=False, _game='', _trophy=''):
 
 intro = """
 -----------------------
-BitHunter - Kalopsia © 2020
+__________________       ______  __             _____             
+___  __ )__(_)_  /_      ___  / / /___  __________  /_____________
+__  __  |_  /_  __/________  /_/ /_  / / /_  __ \  __/  _ \_  ___/
+_  /_/ /_  / / /_ _/_____/  __  / / /_/ /_  / / / /_ /  __/  /    
+/_____/ /_/  \__/        /_/ /_/  \__,_/ /_/ /_/\__/ \___//_/                                   
+                                                              
 -----------------------
 """
 
@@ -261,12 +278,17 @@ while True:
                 game = Game(int(gameID))
                 soup = game.GetSoup()
                 game.GetName(soup)
-                print("\nGame Title: "+game.name+"\n")
-                time.sleep(0.5)
-                game.GetAllTrophies(soup)
-                game.ProcessAllTrophies()
-                print("\n\nAll the trophy images for " +
-                      game.name+" have been processed!\n\n")
+                if game.name == None:
+                    print("\nERROR: Could not find any game with the selected ID")
+                else:
+                    print("\nGame Title: "+game.name+"\n")
+                    time.sleep(0.5)
+                    game.GetAllTrophies(soup)
+                    if (exportTrophyInfo):
+                        game.ExportGameDataToCSV()
+                    game.ProcessAllTrophies()
+                    print("\n\nAll the trophy images for " +
+                          game.name+" have been processed!\n\n")
 
         except ValueError:
             print('Please enter a valid GameID or type `exit` to quit')

@@ -112,12 +112,13 @@ class Game:
                     self.trophies.append(trophy)
 
     def ExportGameDataToCSV(self):
-        with (open(Slugify(self.name)+'.csv', 'w', newline='')) as f:
+        filename = str(self.id)+'-'+Slugify(self.name)+'.csv'
+        with (open(filename, 'w', newline='')) as f:
             writer = csv.writer(f)
             writer.writerow(['Name', 'Description', 'Type'])
             for trophy in self.trophies:
                 writer.writerow([trophy.name, trophy.desc, trophy.type])
-            print("Game trophies info exported to "+Slugify(self.name)+".csv")
+            print("Game trophies info exported to " + filename)
 
     def ProcessAllTrophies(self):
         """Scrapes image and apply frame to every image"""

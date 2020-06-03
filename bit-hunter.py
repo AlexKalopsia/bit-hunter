@@ -104,7 +104,7 @@ class Game:
                 columns = row.find_all('td')
                 if len(columns) == 6:
                     name = columns[1].find('a').get_text()
-                    desc = columns[1].get_text().replace(name, '').strip()
+                    desc = columns[1].get_text()[len(name)+1:]
                     URL = "https://psnprofiles.com" + \
                         columns[1].find('a').get('href')
                     type_ = columns[5].find('img').get('title')

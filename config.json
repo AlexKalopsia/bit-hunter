@@ -3,7 +3,7 @@
   "storeOriginals": true,
   "processOriginals": true,
   "acceptedTypes": [".PNG", ".JPG", ".JPEG"],
-  "frameThickness": 15,
+  "frameThickness": 6,
   "exportSizes": [240],
   "exportTypes": [".PNG"],
   "imageNameRoot": "psbit-@t",

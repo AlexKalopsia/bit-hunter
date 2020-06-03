@@ -205,8 +205,8 @@ def ProcessImage(_imageURL='', _local=False, _game='', _trophy=''):
         img = BytesIO(response.content)
 
     imgTrophy = Image.open(img)
-    imgTrophy_w = int(imgTrophy.width)
-    imgTrophy_h = int(imgTrophy.height)
+    imgTrophy_w = int(min(imgTrophy.width, imgFrame.width))
+    imgTrophy_h = int(min(imgTrophy.height, imgFrame.height))
     imgTrophyResized_size = (
         imgTrophy_w-(frameThickness*2), imgTrophy_h-(frameThickness*2))
     imgTrophyResized = imgTrophy.resize(imgTrophyResized_size)

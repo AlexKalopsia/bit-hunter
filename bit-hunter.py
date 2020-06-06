@@ -17,7 +17,7 @@ import time
 import re
 
 
-def CheckFolders():
+def check_folders():
     """Creates image folders if any is missing"""
     folders = ('/consume', '/originals', '/processed')
     mkdir = False
@@ -32,7 +32,7 @@ def CheckFolders():
             print("-------------------------------")
 
 
-def LoadConfig():
+def load_config():
     """Loads config file or creates a new one
     if none can be found"""
 
@@ -57,8 +57,8 @@ def LoadConfig():
     return data
 
 
-CheckFolders()
-config = LoadConfig()
+check_folders()
+config = load_config()
 exportTrophyInfo = config.get('exportTrophyInfo')
 storeOriginals = config.get('storeOriginals')
 processOriginals = config.get('processOriginals')
@@ -76,7 +76,7 @@ class Game:
         self.id, self.name, self.platform = _id, None, None
         self.trophies = []
 
-    def GetSoup(self):
+    def get_soup(self):
         """Pulls HTML data from game page"""
 
         URL = "https://psnprofiles.com/trophies/"+str(self.id)
@@ -85,7 +85,7 @@ class Game:
         page = requests.get(URL, headers=headers)
         return BeautifulSoup(page.content, 'html.parser')
 
-    def GetName(self, _soup):
+    def get_name(self, _soup):
         titles = _soup.findAll("div", class_="title flex v-align center")
         for title in titles:
             info = str(title)
@@ -93,7 +93,7 @@ class Game:
                 '<h3>')+4:info.find(" Trophies")].replace('&amp;', '&')
             break
 
-    def GetAllTrophies(self, _soup):
+    def get_all_trophies(self, _soup):
         """Stores information of every trophy"""
 
         tables = _soup.find_all(
@@ -111,8 +111,9 @@ class Game:
                     trophy = Trophy(name, desc, type_, URL)
                     self.trophies.append(trophy)
 
-    def ExportGameDataToCSV(self):
-        filename = str(self.id)+'-'+Slugify(self.name)+'.csv'
+    def export_data_to_csv(self):
+        """Exports trophy list to csv file"""
+        filename = str(self.id)+'-'+slugify(self.name)+'.csv'
         with (open(filename, 'w', newline='')) as f:
             writer = csv.writer(f)
             writer.writerow(['Name', 'Description', 'Type'])
@@ -120,15 +121,15 @@ class Game:
                 writer.writerow([trophy.name, trophy.desc, trophy.type])
             print("Game trophies info exported to " + filename)
 
-    def ProcessAllTrophies(self):
+    def process_all_trophies(self):
         """Scrapes image and apply frame to every image"""
 
         for trophy in self.trophies:
-            if trophy.Scrape():
+            if trophy.scrape():
                 if storeOriginals:
-                    StoreRemoteImage(trophy.imageURL)
+                    store_remote_image(trophy.imageURL)
                 if processOriginals:
-                    ProcessImage(trophy.imageURL, False,
+                    process_image(trophy.imageURL, False,
                                  self.name, trophy.name)
 
 
@@ -138,7 +139,7 @@ class Trophy:
         self.name, self.desc, self.type, self.URL = _name, _desc, _type, _url
         self.imageURL = None
 
-    def Scrape(self):
+    def scrape(self):
         """Scrapes URL of HD trophy image"""
 
         headers = {
@@ -157,7 +158,7 @@ class Trophy:
         return True
 
 
-def ConsumeImages():
+def consume_images():
     """
     Chews images from the /consume folder.
     Only chews accepted filetypes defined in config file
@@ -170,23 +171,24 @@ def ConsumeImages():
                           for s in acceptedTypes)
             if canChew:
                 path = os.path.join(r, file)
-                ProcessImage(path, True)
+                process_image(path, True)
 
 
-def Slugify(value):
+def slugify(value):
     """Removes invalid characters from string"""
     value = re.sub(r'[^\w\s-]', '', value.lower())
     return re.sub(r'[-\s]+', '-', value).strip('-_').replace('.', '')
 
 
-def StoreRemoteImage(_imageURL):
+def store_remote_image(_imageURL):
+    """Store image from URL"""
     URL = _imageURL
     filename = URL.split('/')[-1]
     urllib.request.urlretrieve(
         URL, "./originals/"+filename)
 
 
-def ProcessImage(_imageURL='', _local=False, _game='', _trophy=''):
+def process_image(_imageURL='', _local=False, _game='', _trophy=''):
     """Add frame to images"""
 
     print("Processing "+_imageURL+"...")
@@ -220,9 +222,9 @@ def ProcessImage(_imageURL='', _local=False, _game='', _trophy=''):
         for exportType in exportTypes:
             filename = URL.split('/')[-1]
             name, extension = os.path.splitext(filename)
-            name = Slugify(name)
-            trophy = Slugify(_trophy)
-            game = Slugify(_game)
+            name = slugify(name)
+            trophy = slugify(_trophy)
+            game = slugify(_game)
             root = imageNameRoot.replace(
                 '@g', game).replace('@t', trophy).replace('@s', str(size))
             if root != '':
@@ -273,21 +275,21 @@ while True:
         try:
             gameID = int(user_input)
             if (int(gameID) == 0):
-                ConsumeImages()
+                consume_images()
                 print("\nAll the trophy images have been processed!\n\n")
             else:
                 game = Game(int(gameID))
-                soup = game.GetSoup()
-                game.GetName(soup)
+                soup = game.get_soup()
+                game.get_name(soup)
                 if game.name == None:
                     print("\nERROR: Could not find any game with the selected ID")
                 else:
                     print("\nGame Title: "+game.name+"\n")
                     time.sleep(0.5)
-                    game.GetAllTrophies(soup)
+                    game.get_all_trophies(soup)
                     if (exportTrophyInfo):
-                        game.ExportGameDataToCSV()
-                    game.ProcessAllTrophies()
+                        game.export_data_to_csv()
+                    game.process_all_trophies()
                     print("\n\nAll the trophy images for " +
                           game.name+" have been processed!\n\n")
 

@@ -6,15 +6,13 @@ import json
 import os
 import sys
 
-from PIL import Image
-from PIL import ImageDraw
+from PIL import Image, ImageDraw
 from bs4 import BeautifulSoup
 from pathlib import Path
 import requests
-import urllib.request
 import csv
-import time
 import re
+
 from errors import GameNotFoundError, InputError
 
 
@@ -36,6 +34,8 @@ def check_folders():
 def load_config():
     """Loads config file or creates a new one
     if none can be found"""
+
+    data = {}
 
     try:
         with open('config.json') as json_data_file:
@@ -89,7 +89,7 @@ class Game:
     def get_name(self, _soup):
         titles = _soup.findAll("div", class_="title flex v-align center")
         if titles == []:
-            raise GameNotFoundError
+            raise GameNotFoundError(self.id)
         for title in titles:
             info = str(title)
             self.name = info[info.find(
@@ -106,8 +106,8 @@ class Game:
             for row in rows:
                 columns = row.find_all('td')
                 if len(columns) == 6:
-                    name = columns[1].find('a').get_text()
-                    desc = columns[1].get_text()[len(name)+1:]
+                    name = columns[1].find('a').get_text().strip()
+                    desc = columns[1].get_text()[len(name)+1:].strip()
                     URL = "https://psnprofiles.com" + \
                         columns[1].find('a').get('href')
                     type_ = columns[5].find('img').get('title')
@@ -187,8 +187,9 @@ def store_remote_image(_imageURL):
     """Store image from URL"""
     URL = _imageURL
     filename = URL.split('/')[-1]
-    urllib.request.urlretrieve(
-        URL, "./originals/"+filename)
+    response = requests.get(URL)
+    with open(os.path.join('./originals/', filename), 'wb') as f:
+        f.write(response.content)
 
 
 def process_image(_imageURL='', _local=False, _game='', _trophy=''):
@@ -200,7 +201,6 @@ def process_image(_imageURL='', _local=False, _game='', _trophy=''):
     except IOError:
         print("Could not find frame image. Using default one.")
         imgFrame = Image.new('RGB', (240, 240), color='#fff')
-    imgFrame_size = imgFrame.size
     URL = _imageURL
 
     if (_local):
@@ -216,7 +216,7 @@ def process_image(_imageURL='', _local=False, _game='', _trophy=''):
         imgTrophy_w-(frameThickness*2), imgTrophy_h-(frameThickness*2))
     imgTrophyResized = imgTrophy.resize(imgTrophyResized_size)
 
-    imgFinal = Image.new('RGB', imgFrame_size, color='#fff')
+    imgFinal = Image.new('RGB', imgFrame.size, color='#fff')
     imgFinal.paste(imgFrame)
     imgFinal.paste(imgTrophyResized, (frameThickness, frameThickness))
 
@@ -300,7 +300,6 @@ while True:
                 pass
             else:
                 print("\nGame Title: "+game.name+"\n")
-                time.sleep(0.5)
                 game.get_all_trophies(soup)
                 if (exportTrophyInfo):
                     game.export_data_to_csv()

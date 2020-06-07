@@ -1,0 +1,19 @@
+{
+    "exportTrophyInfo": true,
+    "storeOriginals": false,
+    "processOriginals": true,
+    "acceptedTypes": [
+        ".PNG",
+        ".JPG",
+        ".JPEG"
+    ],
+    "frameThickness": 15,
+    "exportSizes": [
+        240
+    ],
+    "exportTypes": [
+        ".PNG"
+    ],
+    "imageNameRoot": "@t",
+    "imageNameEnd": "@s"
+}

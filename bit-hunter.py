@@ -237,7 +237,7 @@ def process_image(_imageURL='', _local=False, _game='', _trophy=''):
                 '@g', game).replace('@t', trophy).replace('@s', str(size))
             if end != '':
                 end = '-'+end
-            filename = name+'-'+end+exportType.lower()
+            filename = name+end+exportType.lower()
             try:
                 final = imgResized.save(
                     './processed/'+filename, exportType[1:])

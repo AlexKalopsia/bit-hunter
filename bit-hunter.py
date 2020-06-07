@@ -274,11 +274,14 @@ while True:
     else:
         try:
             gameID = int(user_input)
-            if (int(gameID) == 0):
+        except ValueError:
+            print('Please enter a valid GameID or type `exit` to quit')
+        else:
+            if (gameID == 0):
                 consume_images()
                 print("\nAll the trophy images have been processed!\n\n")
             else:
-                game = Game(int(gameID))
+                game = Game(gameID)
                 soup = game.get_soup()
                 game.get_name(soup)
                 if game.name == None:
@@ -291,7 +294,4 @@ while True:
                         game.export_data_to_csv()
                     game.process_all_trophies()
                     print("\n\nAll the trophy images for " +
-                          game.name+" have been processed!\n\n")
-
-        except ValueError:
-            print('Please enter a valid GameID or type `exit` to quit')
+                        game.name+" have been processed!\n\n")

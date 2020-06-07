@@ -15,7 +15,7 @@ import urllib.request
 import csv
 import time
 import re
-import errors
+from errors import GameNotFoundError, InputError
 
 
 def check_folders():
@@ -89,7 +89,7 @@ class Game:
     def get_name(self, _soup):
         titles = _soup.findAll("div", class_="title flex v-align center")
         if titles == []:
-            raise errors.GameNotFoundError
+            raise GameNotFoundError
         for title in titles:
             info = str(title)
             self.name = info[info.find(
@@ -275,7 +275,7 @@ def check_input(input):
         if (user_input == 'exit' or user_input == 'q'):
             sys.exit()
         else:
-            raise errors.InputError()
+            raise InputError()
 
 
 print(intro)
@@ -284,7 +284,7 @@ while True:
 
     try:
         check_input(user_input)
-    except errors.InputError:
+    except InputError:
         pass
     else:
         gameID = user_input
@@ -296,7 +296,7 @@ while True:
             soup = game.get_soup()
             try:
                 game.get_name(soup)
-            except errors.GameNotFoundError:
+            except GameNotFoundError:
                 pass
             else:
                 print("\nGame Title: "+game.name+"\n")

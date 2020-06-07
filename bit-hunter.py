@@ -15,6 +15,7 @@ import urllib.request
 import csv
 import time
 import re
+import errors
 
 
 def check_folders():
@@ -87,6 +88,8 @@ class Game:
 
     def get_name(self, _soup):
         titles = _soup.findAll("div", class_="title flex v-align center")
+        if titles == []:
+            raise errors.GameNotFoundError
         for title in titles:
             info = str(title)
             self.name = info[info.find(
@@ -130,7 +133,7 @@ class Game:
                     store_remote_image(trophy.imageURL)
                 if processOriginals:
                     process_image(trophy.imageURL, False,
-                                 self.name, trophy.name)
+                                  self.name, trophy.name)
 
 
 class Trophy:
@@ -266,32 +269,41 @@ prompt = """
 Input Game ID or type 0 to consume local images:
 """
 
+
+def check_input(input):
+    if input.isdigit() == False:
+        if (user_input == 'exit' or user_input == 'q'):
+            sys.exit()
+        else:
+            raise errors.InputError()
+
+
 print(intro)
 while True:
     user_input = input(prompt)
-    if (user_input == 'exit' or user_input == 'q'):
-        break
+
+    try:
+        check_input(user_input)
+    except errors.InputError:
+        pass
     else:
-        try:
-            gameID = int(user_input)
-        except ValueError:
-            print('Please enter a valid GameID or type `exit` to quit')
+        gameID = user_input
+        if (gameID == 0):
+            consume_images()
+            print("\nAll the trophy images have been processed!\n\n")
         else:
-            if (gameID == 0):
-                consume_images()
-                print("\nAll the trophy images have been processed!\n\n")
-            else:
-                game = Game(gameID)
-                soup = game.get_soup()
+            game = Game(gameID)
+            soup = game.get_soup()
+            try:
                 game.get_name(soup)
-                if game.name == None:
-                    print("\nERROR: Could not find any game with the selected ID")
-                else:
-                    print("\nGame Title: "+game.name+"\n")
-                    time.sleep(0.5)
-                    game.get_all_trophies(soup)
-                    if (exportTrophyInfo):
-                        game.export_data_to_csv()
-                    game.process_all_trophies()
-                    print("\n\nAll the trophy images for " +
-                        game.name+" have been processed!\n\n")
+            except errors.GameNotFoundError:
+                pass
+            else:
+                print("\nGame Title: "+game.name+"\n")
+                time.sleep(0.5)
+                game.get_all_trophies(soup)
+                if (exportTrophyInfo):
+                    game.export_data_to_csv()
+                game.process_all_trophies()
+                print("\n\nAll the trophy images for " +
+                      game.name+" have been processed!\n\n")
